@@ -24,47 +24,74 @@ class Player(pygame.sprite.Sprite):
         #self.collider_rect = self.collider.get_rect()
 
         self.speed = speed
-        self.v = 6
+        # acceleration, velocity, mass
+        self.a = 2
+        self.v = self.v_jump = self.v0 = 8
         self.m = 6
         self.is_jumping = False
+        self.is_decelerating = False
+
+        # this parameter will be used to determine direction for slowing down when user stops skating; 1 = right, -1 = left, 0 = no movement
+        self.moving_direction = 0
 
 
     def move(self, screen, events):
 
         for event in events:
-            if event.type == pygame.KEYDOWN and (event.key == pygame.K_UP or event.key == pygame.K_w):
-                self.is_jumping = True
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP or event.key == pygame.K_w:
+                    self.is_jumping = True
 
-        #        if event.key == pygame.K_RIGHT and self.rect.x < (screen.get_size()[0] - self.rect.width): self.rect.x += self.speed
-        #        if event.key == pygame.K_LEFT and self.rect.x > 400: self.rect.x += self.speed * (-1)
-        #        if event.key == pygame.K_DOWN and self.rect.y < (screen.get_size()[1] - self.rect.height): self.rect.y += self.speed
-        #        if event.key == pygame.K_UP and self.rect.y > 0: self.rect.y += self.speed * (-1)
+            elif event.type == pygame.KEYUP:
+                self.is_decelerating = True
+
 
         keystate = pygame.key.get_pressed()
-        if keystate[K_RIGHT] and self.rect.x < (screen.get_size()[0] - self.rect.width): self.rect.x += self.speed
-        if keystate[K_LEFT] and self.rect.x > 0: self.rect.x += self.speed * (-1)
-        #if keystate[K_DOWN] and self.rect.y < (screen.get_size()[1] - self.rect.height): self.rect.y += self.speed
-        #if keystate[K_UP] and self.rect.y > 0: self.rect.y += self.speed * (-1)
+        if (keystate[K_RIGHT] or keystate[K_d]) and self.rect.x < (screen.get_size()[0] - self.rect.width):
+            self.moving_direction = 1
 
-        #self.collider_rect.x += self.speed * direction[0]
-        #self.collider_rect.y += self.speed * direction[1]
+        if (keystate[K_LEFT] or keystate[K_a]) and self.rect.x > 0: 
+            self.moving_direction = -1
 
 
-    def jump(self, ground_pos):
+        self.accelerate()
+        self.decelerate()
+
+    
+    def accelerate(self):
+        self.rect.x += self.speed * self.moving_direction
+        #self.rect.x += self.v * self.v / self.a * self.moving_direction
+
+        #if self.v < 16:
+        #    self.v += 1
+        
+
+    def decelerate(self):
+        if self.v > 0 and self.is_decelerating:
+            self.rect.x += self.v * self.v / self.a * self.moving_direction
+            self.v -= 1
+
+        elif self.v == 0:
+            self.is_decelerating = False
+            self.moving_direction = 0
+            self.v = self.v0
+
+
+    def jump(self, ground_pos_y):
         if self.is_jumping:
             # Calculate force (F)
-            F = self.m * self.v
+            F = self.m * self.v_jump
             
             # Change position
             self.rect.y -= F
  
             # Change velocity
-            self.v -= 1
+            self.v_jump -= 1
  
             # If ground is reached, reset variables.
-            if self.rect.y >= ground_pos:
-                self.rect.y = ground_pos
-                self.v = 8
+            if self.rect.y >= ground_pos_y:
+                self.rect.y = ground_pos_y
+                self.v_jump = self.v0
                 
                 self.is_jumping = False
 
@@ -161,7 +188,7 @@ class Game(State):
         self.all_sprites = []
         self.all_sprites_group = pygame.sprite.Group()
 
-        self.player = Player("graphics/player.png", speed = 4)
+        self.player = Player("graphics/player.png", speed = 10)
         self.player.rect.x = 100
         self.player.rect.y = 550
         self.all_sprites_group.add(self.player)
