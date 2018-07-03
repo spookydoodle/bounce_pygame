@@ -30,8 +30,8 @@ while not done:
 
     if game_state.__class__ != game_state.process_events().__class__: 
         game_state = game_state.process_events()
-
-    game_state.run_level(screen, events)
+    
+    game_state.run(screen, events)
 
     game_state.display_frame(screen, background_image)
     
