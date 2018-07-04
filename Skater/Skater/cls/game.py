@@ -79,9 +79,11 @@ class Player(pygame.sprite.Sprite):
         # flags used to perform tricks
         self.is_manual = False
 
-        # these parameters are used to perform an action when player hits an obstacle on horizontal axis (x)
-        self.is_colliding_x = False
-        self.is_colliding_y = False
+        # these parameters are used to stop the player after hitting  obstacle on horizontal axis (x)
+        self.is_colliding_r = False
+        self.is_colliding_l = False
+        self.is_colliding_t = False
+        self.is_colliding_b = False
 
         # these parameters are used to determine direction for accelerating/decelerating when user stops skating; 
         # 1 = right/up, -1 = left/down, 0 = no movement
@@ -136,26 +138,30 @@ class Player(pygame.sprite.Sprite):
 
 
     def accelerate(self):
-        self.rect.x += self.speed * self.moving_direction_x
-        #self.rect.x += self.v * self.v / self.a * self.moving_direction_x
+        if (not self.is_colliding_r and self.moving_direction_x > 0) \
+        or (not self.is_colliding_l and self.moving_direction_x < 0):
+            self.rect.x += self.speed * self.moving_direction_x
+            #self.rect.x += self.v * self.v / self.a * self.moving_direction_x
 
-        #if self.v < 10:
-        #    self.v *= 1.2
+            #if self.v < 10:
+            #    self.v *= 1.2
         
 
     def decelerate(self):
-        if self.v > self.ZERO and self.is_decelerating:
-            self.rect.x += self.v * self.v / self.a * self.moving_direction_x
-            
-            # decrease velocity using drag parameter but only if on the ground
-            if not self.is_jumping:
-                self.v *= self.DRAG 
 
-        # if velocity reaches 0.00001 reset to initial velocity value v0
-        elif self.v <= self.ZERO:
-            self.is_decelerating = False
-            self.moving_direction_x = 0
-            self.v = self.v0
+        if not self.is_colliding_r:
+
+            if self.v > self.ZERO and self.is_decelerating:
+                self.rect.x += self.v * self.v / self.a * self.moving_direction_x
+            
+                # decrease velocity using drag parameter but only if on the ground
+                if not self.is_jumping:
+                    self.v *= self.DRAG 
+
+            # if velocity reaches 0.00001 reset to initial velocity value v0
+            elif self.v <= self.ZERO:
+                self.stop_movement_x()
+
 
 
     def jump(self, ground_pos_y):
@@ -183,11 +189,21 @@ class Player(pygame.sprite.Sprite):
 
             # If ground is reached, reset variables.
             if self.rect.y >= ground_pos_y:
-                self.rect.y = ground_pos_y
-                self.v_jump = self.G * self.v0
-                self.v *= self.ELASTICITY
-                
-                self.is_jumping = False
+                self.stop_movement_y()
+
+
+    def stop_movement_x(self):
+        self.is_decelerating = False
+        self.moving_direction_x = 0
+        self.v = self.v0
+
+    
+    def stop_movement_y(self):
+        #self.rect.y = ground_pos_y
+        self.v_jump = self.G * self.v0
+        self.v *= self.ELASTICITY
+        self.is_jumping = False
+        self.is_falling = False
 
 
     def handle_images(self):
@@ -399,10 +415,10 @@ class Game(State):
                 ##if pygame.time.get_ticks() > 15000 * self.t_shuffle:
                 ##    self.t_shuffle += 1
                 ##    self.create_obstacles()
-
+                
+                self.check_collisions()
                 self.player.move(screen, events)
                 self.player.jump(550)
-                self.check_collision()
                 self.check_game_result()
 
             # You won level screen - press any key to move to next level
@@ -434,17 +450,48 @@ class Game(State):
         self.all_sprites_group.add(obstacle2)
 
 
-    def check_collision(self):
-        #Check if there is a colision player - letter and if yes then update hidden keyword on screen, update alphabet and scores
+    def check_collisions(self):
         collision_list = pygame.sprite.spritecollide(self.player, self.all_sprites, False)
-
+    
         for obstacle in collision_list:
-            #self.all_sprites_group.remove(obstacle)
-            #self.all_sprites.remove(obstacle)
-            #self.score.decrease_current()
+            
+            self.check_collision_r(obstacle)
+            self.check_collision_l(obstacle)
 
-            if (self.player.rect.x + self.player.rect.width) >= obstacle.rect.x:
-                self.is_colliding_x = True
+    # check collision player_right - obstacle_left
+    def check_collision_r(self, obstacle):
+        if (self.player.rect.collidepoint(obstacle.rect.midleft) \
+            or self.player.rect.collidepoint(obstacle.rect.topleft) \
+            or self.player.rect.collidepoint(obstacle.rect.bottomleft)) \
+            and (self.player.rect.x + self.player.rect.width) >= obstacle.rect.x:
+            self.player.stop_movement_x()
+            self.player.is_colliding_r = True
+        
+        else:
+            self.player.is_colliding_r = False
+
+
+    # check collision player_left - obstacle_right
+    def check_collision_l(self, obstacle):
+        if (self.player.rect.collidepoint(obstacle.rect.midright) \
+            or self.player.rect.collidepoint(obstacle.rect.topright) \
+            or self.player.rect.collidepoint(obstacle.rect.bottomright)) \
+            and self.player.rect.x <= (obstacle.rect.x + obstacle.rect.width):
+
+            self.player.stop_movement_x()
+            self.player.is_colliding_l = True
+
+        else:
+            self.player.is_colliding_l = False
+
+    ## check collision player_bottom - obstacle_top - not working yet
+    #def check_collision_b(self, obstacle):
+    #    if self.player.rect.colliderect(obstacle.rect) \
+    #        and self.player.rect.x <= (obstacle.rect.x + obstacle.rect.height) \
+    #        and self.player.rect.x <= (obstacle.rect.x + obstacle.rect.width):
+
+    #        self.player.stop_movement_y()
+    #        self.player.is_colliding_b = True  
 
 
     def check_game_result(self):
