@@ -60,7 +60,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load(path).convert_alpha()
 
     # handle user input
-    def move(self, screen, events):
+    def move(self, screen, event):
         
         # set moving_direction_x parameter based on user input, except for when skater is in the air (is_jumping parameter)
         keystate = pygame.key.get_pressed()
@@ -81,17 +81,16 @@ class Player(pygame.sprite.Sprite):
 
 
         # set flags for jumping based on user input and for deceleration if user stops pressing movement buttons
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                #if event.key in [CONTROLS["G_RIGHT"], CONTROLS["G_LEFT"]]:
-                #    self.stop_movement_x()
+        if event.type == pygame.KEYDOWN:
+            #if event.key in [CONTROLS["G_RIGHT"], CONTROLS["G_LEFT"]]:
+            #    self.stop_movement_x()
 
-                if event.key in CONTROLS["G_OLLIE"]:
-                    self.is_jumping = True
+            if event.key in CONTROLS["G_OLLIE"]:
+                self.is_jumping = True
 
-            elif event.type == pygame.KEYUP:
-                self.is_decelerating = True
-                self.is_manual = False
+        elif event.type == pygame.KEYUP:
+            self.is_decelerating = True
+            self.is_manual = False
 
 
         # call movement functions after handling user input

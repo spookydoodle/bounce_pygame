@@ -57,22 +57,21 @@ class Menu(State):
             elif self.active_state == "Exit": pygame.quit()
 
     
-    def run(self, screen, events): 
+    def run(self, screen, event): 
         
-        for event in events:
-            if event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
 
-                if event.key in CONTROLS["M_DOWN"] and self.selected_index < (len(self.OPTIONS) - 1):
-                    self.selected_index = self._next_index()
+            if event.key in CONTROLS["M_DOWN"] and self.selected_index < (len(self.OPTIONS) - 1):
+                self.selected_index = self._next_index()
 
-                if event.key in CONTROLS["M_UP"] and self.selected_index > 0:
-                    self.selected_index = self._previous_index()
+            if event.key in CONTROLS["M_UP"] and self.selected_index > 0:
+                self.selected_index = self._previous_index()
 
-                if event.key in CONTROLS["M_SELECT"]:
-                   #if self.selected_index == 0: self.active_state = "game"
-                   #if self.selected_index == 1: self.active_state = "controls"
-                   #if self.selected_index == 2: pygame.quit()
-                   self.active_state = self.OPTIONS[self.selected_index]
+            if event.key in CONTROLS["M_SELECT"]:
+               #if self.selected_index == 0: self.active_state = "game"
+               #if self.selected_index == 1: self.active_state = "controls"
+               #if self.selected_index == 2: pygame.quit()
+               self.active_state = self.OPTIONS[self.selected_index]
 
 
     def display_frame(self, screen, background_image):
@@ -125,19 +124,18 @@ class Controls(State):
             else: return self
             
     
-    def run(self, screen, events): 
+    def run(self, screen, event): 
         
-        for event in events:
-            if event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
 
-                if event.key in CONTROLS["M_DOWN"] and self.selected_index < (len(self.CONTROLS_DESC) - 1):
-                    self.selected_index = self._next_index()
+            if event.key in CONTROLS["M_DOWN"] and self.selected_index < (len(self.CONTROLS_DESC) - 1):
+                self.selected_index = self._next_index()
 
-                if event.key in CONTROLS["M_UP"] and self.selected_index > 0:
-                    self.selected_index = self._previous_index()
+            if event.key in CONTROLS["M_UP"] and self.selected_index > 0:
+                self.selected_index = self._previous_index()
 
-                if event.key in CONTROLS["M_SELECT"]:
-                   self.active_state = self.CONTROLS_DESC[self.selected_index][0]
+            if event.key in CONTROLS["M_SELECT"]:
+               self.active_state = self.CONTROLS_DESC[self.selected_index][0]
 
 
     def display_frame(self, screen, background_image):
@@ -191,7 +189,7 @@ class Game(State):
         else: return self
 
     
-    def run(self, screen, events):
+    def run(self, screen, event):
         
         if self.new_level:
             self.level += 1
@@ -211,18 +209,18 @@ class Game(State):
                 ##    self.create_obstacles()
                 
                 self.check_collisions()
-                self.player.move(screen, events)
+                self.player.move(screen, event)
                 #self.player.fall()
                 self.player.jump()
                 self.check_game_result()
 
             # You won level screen - press any key to move to next level
             else: 
-                self.won_level_continue(events)
+                self.won_level_continue(event)
 
         # Game over screen action - press any key and move to menu
         else:
-            self.game_over_continue(events)
+            self.game_over_continue(event)
     
     # this is still working/testing version of this function...
     def create_obstacles(self):
@@ -302,20 +300,18 @@ class Game(State):
             self.game_over = True
 
     
-    def game_over_continue(self, events):
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key in CONTROLS["YES"]:
-                    self.active_state = "Menu"
-                elif event.key == pygame.K_n:
-                    self.exit = True
+    def game_over_continue(self, event):
+        if event.type == pygame.KEYDOWN:
+            if event.key in CONTROLS["YES"]:
+                self.active_state = "Menu"
+            elif event.key == pygame.K_n:
+                self.exit = True
 
 
-    def won_level_continue(self, events):
-        for event in events:
-            if event.type == pygame.KEYDOWN and event.key in CONTROLS["YES"]: 
-                self.won_level = False
-                self.new_level = True
+    def won_level_continue(self, event):
+        if event.type == pygame.KEYDOWN and event.key in CONTROLS["YES"]: 
+            self.won_level = False
+            self.new_level = True
 
 
     def display_frame(self, screen, background_image):

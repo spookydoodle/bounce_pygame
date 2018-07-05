@@ -27,12 +27,13 @@ while not done:
 
     done = game_state.check_exit()
 
-    events = pygame.event.get()
-
     if game_state.__class__ != game_state.process_events().__class__: 
         game_state = game_state.process_events()
+
+    # Get the next queued event 
+    event = pygame.event.poll()
     
-    game_state.run(screen, events)
+    game_state.run(screen, event)
 
     game_state.display_frame(screen, background_image)
     
