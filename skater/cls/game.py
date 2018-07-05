@@ -1,9 +1,9 @@
 import pygame
 from pygame.locals import *
-from cls.player import *
-from cls.obstacles import *
-from cls.score import *
-from cls.dicts import *
+from .player import *
+from .obstacles import *
+from .score import *
+from .dicts import *
 
 
 class State:

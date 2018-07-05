@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-from cls.dicts import *
+from .dicts import *
 
 
 class Player(pygame.sprite.Sprite):
@@ -17,8 +17,8 @@ class Player(pygame.sprite.Sprite):
 
 
     # dictionary with paths to player images for each action/trick
-    IMAGES = {"MAIN" : "graphics/player.png", 
-              "MANUAL" : "graphics/player_manual.png"
+    IMAGES = {"MAIN" : "skater/graphics/player.png", 
+              "MANUAL" : "skater/graphics/player_manual.png"
               }
 
     def __init__(self, speed = 0):

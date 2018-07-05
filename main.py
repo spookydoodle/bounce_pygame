@@ -2,7 +2,7 @@ import os
 import string
 import pygame
 from pygame.locals import *
-from cls.game import *
+from skater.cls.game import *
 
 
 # Set fonts for drawing 
@@ -10,7 +10,7 @@ pygame.init()
 pygame.font.init() 
 
 # Set game window frame, background amd fonts for printing
-background_image = pygame.image.load("graphics/background_image.png")
+background_image = pygame.image.load("skater/graphics/background_image.png")
 ##size = width, height = background_image.get_rect().width, background_image.get_rect().height
 size = width, height = (1280, 720)
 screen = pygame.display.set_mode(size)
