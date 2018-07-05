@@ -2,6 +2,8 @@ import pygame
 from pygame.locals import *
 from .dicts import *
 
+from skater import images
+
 
 class Player(pygame.sprite.Sprite):
 
@@ -15,16 +17,10 @@ class Player(pygame.sprite.Sprite):
     # elasticity parameter used to decrease velocity when hitting the ground
     ELASTICITY = 0.8
 
-
-    # dictionary with paths to player images for each action/trick
-    IMAGES = {"MAIN" : "skater/graphics/player.png", 
-              "MANUAL" : "skater/graphics/player_manual.png"
-              }
-
     def __init__(self, speed = 0):
         super().__init__()
 
-        self.image = pygame.image.load(self.IMAGES["MAIN"]).convert_alpha()
+        self.image = pygame.image.load(images.PLAYER_MAIN).convert_alpha()
         self.rect = self.image.get_rect()
 
         #self.collider = pygame.transform.scale(self.image, (int(0.6 * self.rect.width), int(0.6 * self.rect.height)))
@@ -183,5 +179,5 @@ class Player(pygame.sprite.Sprite):
 
 
     def handle_images(self):
-        if self.is_manual: self.image = pygame.image.load(self.IMAGES["MANUAL"]).convert_alpha()
-        else: self.image = pygame.image.load(self.IMAGES["MAIN"]).convert_alpha()
+        if self.is_manual: self.image = pygame.image.load(images.PLAYER_MANUAL).convert_alpha()
+        else: self.image = pygame.image.load(images.PLAYER_MAIN).convert_alpha()
