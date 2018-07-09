@@ -1,6 +1,8 @@
 import pygame
 from pygame.locals import *
-from cls.dicts import *
+from .dicts import *
+
+from skater import images
 
 
 class Player(pygame.sprite.Sprite):
@@ -15,16 +17,10 @@ class Player(pygame.sprite.Sprite):
     # elasticity parameter used to decrease velocity when hitting the ground
     ELASTICITY = 0.8
 
-
-    # dictionary with paths to player images for each action/trick
-    IMAGES = {"MAIN" : "graphics/player.png", 
-              "MANUAL" : "graphics/player_manual.png"
-              }
-
     def __init__(self, speed = 0):
         super().__init__()
 
-        self.image = pygame.image.load(self.IMAGES["MAIN"]).convert_alpha()
+        self.image = pygame.image.load(images.PLAYER_MAIN).convert_alpha()
         self.rect = self.image.get_rect()
 
         #self.collider = pygame.transform.scale(self.image, (int(0.6 * self.rect.width), int(0.6 * self.rect.height)))
@@ -64,7 +60,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load(path).convert_alpha()
 
     # handle user input
-    def move(self, screen, events):
+    def move(self, screen, event):
         
         # set moving_direction_x parameter based on user input, except for when skater is in the air (is_jumping parameter)
         keystate = pygame.key.get_pressed()
@@ -85,17 +81,16 @@ class Player(pygame.sprite.Sprite):
 
 
         # set flags for jumping based on user input and for deceleration if user stops pressing movement buttons
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                #if event.key in [CONTROLS["G_RIGHT"], CONTROLS["G_LEFT"]]:
-                #    self.stop_movement_x()
+        if event.type == pygame.KEYDOWN:
+            #if event.key in [CONTROLS["G_RIGHT"], CONTROLS["G_LEFT"]]:
+            #    self.stop_movement_x()
 
-                if event.key in CONTROLS["G_OLLIE"]:
-                    self.is_jumping = True
+            if event.key in CONTROLS["G_OLLIE"]:
+                self.is_jumping = True
 
-            elif event.type == pygame.KEYUP:
-                self.is_decelerating = True
-                self.is_manual = False
+        elif event.type == pygame.KEYUP:
+            self.is_decelerating = True
+            self.is_manual = False
 
 
         # call movement functions after handling user input
@@ -183,5 +178,5 @@ class Player(pygame.sprite.Sprite):
 
 
     def handle_images(self):
-        if self.is_manual: self.image = pygame.image.load(self.IMAGES["MANUAL"]).convert_alpha()
-        else: self.image = pygame.image.load(self.IMAGES["MAIN"]).convert_alpha()
+        if self.is_manual: self.image = pygame.image.load(images.PLAYER_MANUAL).convert_alpha()
+        else: self.image = pygame.image.load(images.PLAYER_MAIN).convert_alpha()
