@@ -22,10 +22,10 @@ class Player(pygame.sprite.Sprite):
 
         self.image = pygame.image.load(images.PLAYER_MAIN).convert_alpha()
         self.rect = self.image.get_rect()
-
-        #self.collider = pygame.transform.scale(self.image, (int(0.6 * self.rect.width), int(0.6 * self.rect.height)))
-        #self.collider = self.collider.move((int(0.2 * self.rect.width), int(0.2 * self.rect.height)))
-        #self.collider_rect = self.collider.get_rect()
+        
+        # make collider smaller than the image
+        band = 4
+        self.collide_rect = pygame.Rect(self.rect.x + band, self.rect.top, self.rect.width - 2*band, self.rect.height)
 
         # speed is used for movement to left/right
         self.speed = speed
@@ -35,7 +35,7 @@ class Player(pygame.sprite.Sprite):
         self.a = 2
         self.v = self.v0 = 8
         self.v_jump = self.G * self.v0
-        self.m = 5
+        self.m = 6
         self.is_jumping = False
         self.is_falling = False
         self.is_decelerating = False
@@ -115,7 +115,7 @@ class Player(pygame.sprite.Sprite):
 
     def decelerate(self):
 
-        if not self.is_colliding_r:
+        if not self.is_colliding_r and not self.is_colliding_l:
 
             if self.v > self.ZERO and self.is_decelerating:
                 self.rect.x += self.v * self.v / self.a * self.moving_direction_x
@@ -127,8 +127,7 @@ class Player(pygame.sprite.Sprite):
             # if velocity reaches 0.00001 reset to initial velocity value v0
             elif self.v <= self.ZERO:
                 self.stop_movement_x()
-
-
+                
 
     def jump(self):
         if self.is_jumping:
@@ -154,8 +153,8 @@ class Player(pygame.sprite.Sprite):
 
 
             ## If ground is reached, reset variables.
-            #if self.rect.y >= ground_pos_y:
-            #    self.stop_movement_y()
+            #if self.rect.bottom >= 700:
+            #    self.stop_movement_y(700)
 
     
     def fall(self):
@@ -170,7 +169,7 @@ class Player(pygame.sprite.Sprite):
 
     
     def stop_movement_y(self, y):
-        self.rect.y = y
+        self.rect.bottom = y + 1
         self.v_jump = self.G * self.v0
         self.v *= self.ELASTICITY
         self.is_jumping = False

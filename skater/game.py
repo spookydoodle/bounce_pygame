@@ -170,7 +170,7 @@ class Game(State):
 
         self.player = Player(speed = 8)
         self.player.rect.x = 100
-        self.player.rect.y = 550
+        self.player.rect.bottom = 500
         self.all_sprites_group.add(self.player)
 
         ##self.keyword = Keyword()
@@ -198,7 +198,7 @@ class Game(State):
             ##self.alphabet.reset()
             self.create_obstacles()
             self.player.rect.x = 100
-            self.player.rect.y = 550
+            self.player.rect.bottom = 700
             self.new_level = False
 
         if not self.game_over:
@@ -210,7 +210,7 @@ class Game(State):
                 
                 self.check_collisions()
                 self.player.move(screen, event)
-                #self.player.fall()
+                self.player.fall()
                 self.player.jump()
                 self.check_game_result()
 
@@ -230,7 +230,7 @@ class Game(State):
 
         ground = Obstacle(image = pygame.Surface([2000, 50]), x = -50, y = 700)
 
-        obstacle2 = Obstacle(image = pygame.Surface([400, 50]), x = 500, y = 650)
+        obstacle2 = Obstacle(image = pygame.Surface([400, 25]), x = 500, y = 675)
 
         obstacle3 = Obstacle(image = pygame.Surface([50, 700]), x = -25, y = 0)
         
@@ -244,7 +244,7 @@ class Game(State):
 
 
     def check_collisions(self):
-        
+        var1 = (self.player.is_colliding_r, self.player.is_colliding_l, self.player.is_colliding_b, self.player.rect.bottom)
         # reset collision flags
         self.player.is_colliding_l = False
         self.player.is_colliding_r = False
@@ -264,22 +264,21 @@ class Game(State):
 
     # check collision player_right - obstacle_left
     def check_collision_r(self, obstacle):
-        
-        if (self.player.rect.collidepoint(obstacle.rect.midleft) \
-            or self.player.rect.collidepoint(obstacle.rect.topleft) \
-            or self.player.rect.collidepoint(obstacle.rect.bottomleft)) \
-            and (self.player.rect.right) >= obstacle.rect.left:
+
+        if pygame.sprite.collide_rect(self.player, obstacle) \
+            and self.player.rect.left <= obstacle.rect.left \
+            and self.player.rect.right >= obstacle.rect.left:
+
             self.player.stop_movement_x()
             self.player.is_colliding_r = True
 
 
     # check collision player_left - obstacle_right
     def check_collision_l(self, obstacle):
-        
-        if (self.player.rect.collidepoint(obstacle.rect.midright) \
-            or self.player.rect.collidepoint(obstacle.rect.topright) \
-            or self.player.rect.collidepoint(obstacle.rect.bottomright)) \
-            and self.player.rect.left <= (obstacle.rect.right):
+
+        if pygame.sprite.collide_rect(self.player, obstacle) \
+            and self.player.rect.left <= obstacle.rect.right \
+            and self.player.rect.right >= obstacle.rect.right:
 
             self.player.stop_movement_x()
             self.player.is_colliding_l = True
@@ -288,11 +287,22 @@ class Game(State):
     # check collision player_bottom - obstacle_top - not working yet
     def check_collision_b(self, obstacle):
 
-        if self.player.rect.colliderect(obstacle.rect) \
-            and self.player.rect.bottom >= (obstacle.rect.top):
+        # this condition is added to avoid changing y position when player collides with a corner of an obstacle (e.g., top left point)
+        if not self.player.is_colliding_r and not self.player.is_colliding_l:
+
+            # additional conditions are given to handle situations where collision appears on the corners of an obstacle
+            if pygame.sprite.collide_rect(self.player, obstacle) \
+                and self.player.rect.bottom >= obstacle.rect.top \
+                and self.player.rect.top <= obstacle.rect.top \
+                \
+                and self.player.rect.right > obstacle.rect.left \
+                and self.player.rect.left > (obstacle.rect.left - self.player.rect.width) \
+                \
+                and self.player.rect.right < (obstacle.rect.right + self.player.rect.width) \
+                and self.player.rect.left < obstacle.rect.right:
             
-            self.player.stop_movement_y(obstacle.rect.top - self.player.rect.height)
-            self.player.is_colliding_b = True 
+                self.player.stop_movement_y(obstacle.rect.top)
+                self.player.is_colliding_b = True 
 
 
     def check_game_result(self):
