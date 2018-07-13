@@ -168,7 +168,7 @@ class Game(State):
         self.all_sprites = []
         self.all_sprites_group = pygame.sprite.Group()
 
-        self.player = Player(speed = 8)
+        self.player = Player(speed = 4)
         self.player.rect.x = 100
         self.player.rect.bottom = 500
         self.all_sprites_group.add(self.player)
@@ -182,6 +182,8 @@ class Game(State):
         self.game_over = False
         self.won_level = False
         self.new_level = True
+
+        self.CameraX = 0
 
 
     def process_events(self):
@@ -208,10 +210,20 @@ class Game(State):
                 ##    self.t_shuffle += 1
                 ##    self.create_obstacles()
                 
+                if self.player.rect.x > screen.get_rect().midtop[0]:
+                    self.CameraX += 0
+
+                elif self.player.rect.x < (screen.get_rect().x + 0.2 * screen.get_rect().width):
+                    self.CameraX -= 0
+
+                else: 
+                    self.CameraX = 0
+
                 self.check_collisions()
-                self.player.move(screen, event)
+                self.player.move(screen, event, self.CameraX)
                 self.player.fall()
                 self.player.jump()
+                self.change_obstacles_pos_cam()
                 self.check_game_result()
 
             # You won level screen - press any key to move to next level
@@ -228,11 +240,13 @@ class Game(State):
         self.all_sprites_group = pygame.sprite.Group()
         self.all_sprites = []
 
-        ground = Obstacle(image = pygame.Surface([2000, 50]), x = -50, y = 700)
+        ground = Obstacle(image = pygame.Surface([2000, 50]), x = 0, y = 700)
 
         obstacle2 = Obstacle(image = pygame.Surface([400, 25]), x = 500, y = 675)
 
-        obstacle3 = Obstacle(image = pygame.Surface([50, 700]), x = -25, y = 0)
+        obstacle3 = Obstacle(image = pygame.Surface([50, 700]), x = 0, y = 0)
+
+        obstacle4 = Obstacle(image = pygame.Surface([50, 700]), x = 1950, y = 0)
         
         self.all_sprites.append(ground)
         self.all_sprites_group.add(ground)
@@ -240,8 +254,12 @@ class Game(State):
         self.all_sprites_group.add(obstacle2)
         self.all_sprites.append(obstacle3)
         self.all_sprites_group.add(obstacle3)
+        self.all_sprites.append(obstacle4)
+        self.all_sprites_group.add(obstacle4)
                
-
+    
+    def change_obstacles_pos_cam(self):
+        for sprite in self.all_sprites: sprite.rect.x -= self.CameraX
 
     def check_collisions(self):
         var1 = (self.player.is_colliding_r, self.player.is_colliding_l, self.player.is_colliding_b, self.player.rect.bottom)
@@ -261,13 +279,15 @@ class Game(State):
             #self.check_collision_t(obstacle)
             self.check_collision_b(obstacle)
 
+        print(self.player.is_colliding_r, self.player.is_colliding_l, self.player.is_colliding_b)
 
     # check collision player_right - obstacle_left
     def check_collision_r(self, obstacle):
 
         if pygame.sprite.collide_rect(self.player, obstacle) \
             and self.player.rect.left <= obstacle.rect.left \
-            and self.player.rect.right >= obstacle.rect.left:
+            and self.player.rect.right >= obstacle.rect.left \
+            and self.player.rect.bottom > obstacle.rect.top:
 
             self.player.stop_movement_x()
             self.player.is_colliding_r = True
@@ -278,7 +298,8 @@ class Game(State):
 
         if pygame.sprite.collide_rect(self.player, obstacle) \
             and self.player.rect.left <= obstacle.rect.right \
-            and self.player.rect.right >= obstacle.rect.right:
+            and self.player.rect.right >= obstacle.rect.right \
+            and self.player.rect.bottom > obstacle.rect.top:
 
             self.player.stop_movement_x()
             self.player.is_colliding_l = True
@@ -287,26 +308,26 @@ class Game(State):
     # check collision player_bottom - obstacle_top - not working yet
     def check_collision_b(self, obstacle):
 
-        # this condition is added to avoid changing y position when player collides with a corner of an obstacle (e.g., top left point)
-        if not self.player.is_colliding_r and not self.player.is_colliding_l:
+        ## this condition is added to avoid changing y position when player collides with a corner of an obstacle (e.g., top left point)
+        #if not self.player.is_colliding_r and not self.player.is_colliding_l:
 
-            # additional conditions are given to handle situations where collision appears on the corners of an obstacle
-            if pygame.sprite.collide_rect(self.player, obstacle) \
-                and self.player.rect.bottom >= obstacle.rect.top \
-                and self.player.rect.top <= obstacle.rect.top \
+        # additional conditions are given to handle situations where collision appears on the corners of an obstacle
+        if pygame.sprite.collide_rect(self.player, obstacle) \
+            and self.player.rect.bottom >= obstacle.rect.top \
+            and self.player.rect.top <= obstacle.rect.top \
+            \
+            and self.player.rect.right > obstacle.rect.left \
+            and self.player.rect.left > (obstacle.rect.left - self.player.rect.width) \
                 \
-                and self.player.rect.right > obstacle.rect.left \
-                and self.player.rect.left > (obstacle.rect.left - self.player.rect.width) \
-                \
-                and self.player.rect.right < (obstacle.rect.right + self.player.rect.width) \
-                and self.player.rect.left < obstacle.rect.right:
+            and self.player.rect.right < (obstacle.rect.right + self.player.rect.width) \
+            and self.player.rect.left < obstacle.rect.right:
             
-                self.player.stop_movement_y(obstacle.rect.top)
-                self.player.is_colliding_b = True 
+            self.player.stop_movement_y(obstacle.rect.top)
+            self.player.is_colliding_b = True 
 
 
     def check_game_result(self):
-        if self.score.current_score == 0:
+        if self.player.is_crash:
             self.game_over = True
 
     
@@ -332,7 +353,7 @@ class Game(State):
         font = pygame.font.SysFont('Arial', 40)
 
         # clean game area
-        screen.fill(WHITE, (0, 0, screen.get_size()[0], screen.get_size()[1]))
+        screen.fill(WHITE, (0 - self.CameraX, 0, screen.get_size()[0], screen.get_size()[1]))
 
         if not self.game_over:
 
@@ -345,13 +366,15 @@ class Game(State):
                 # self.level - 1 because drawing takes place in main after score was increased
                 won_level_text = ["Level " + str(self.level) + " beated!", "Press Y key to continue"]
                 for i, text in enumerate(won_level_text):
-                    draw_text(screen, text, font, BLACK, "L", 500, 300 + i * 50)
+                    draw_text(screen, text, font, BLACK, "L", 500 - self.CameraX, 300 + i * 50)
 
         # Game over screen
         else:
             game_over_text = ["You lost!", "Total score: {}".format(self.score.total_score),  "Do you want to continue? Y/N"]
             for i, text in enumerate(game_over_text):
-                draw_text(screen, text, font, BLACK, "L", 500, 300 + i * 50)
+                draw_text(screen, text, font, BLACK, "L", 500 - self.CameraX, 300 + i * 50)
+
+            self.draw_main_game(screen, BLACK)
 
         pygame.display.update()
 
@@ -368,7 +391,7 @@ class Game(State):
         self.draw_game_results(screen, self.score, color)
 
         # update player image in new position
-        screen.blit(self.player.image, (self.player.rect.x, self.player.rect.y))
+        screen.blit(self.player.image, (self.player.rect.x - self.CameraX, self.player.rect.y))
 
 
     ##def draw_keyword(self, screen, kw_list, color):

@@ -37,7 +37,8 @@ while not done:
 
     game_state.display_frame(screen, background_image)
     
-    clock.tick(60)
+    # Limit to N frames per second
+    clock.tick(90)
 
 
 pygame.quit()

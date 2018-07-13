@@ -12,7 +12,7 @@ class Player(pygame.sprite.Sprite):
     ZERO = 0.000001
 
     # gravity parameter used for relating jumping velocity to main velocity G * v
-    G = 0.8
+    G = 0.9
     
     # elasticity parameter used to decrease velocity when hitting the ground
     ELASTICITY = 0.8
@@ -32,16 +32,17 @@ class Player(pygame.sprite.Sprite):
 
         # acceleration, velocity, mass - used for acceleration and deceleration. 
         # separate velocities for movement on x axis (right/left) and y axis (jump)
-        self.a = 2
-        self.v = self.v0 = 8
+        self.a = 3
+        self.v = self.v0 = speed * 1.8
         self.v_jump = self.G * self.v0
-        self.m = 6
+        self.m = 4
         self.is_jumping = False
         self.is_falling = False
         self.is_decelerating = False
 
         # flags used to perform tricks
         self.is_manual = False
+        self.is_crash = False
 
         # these parameters are used to stop the player after hitting  obstacle on horizontal axis (x)
         self.is_colliding_r = False
@@ -60,7 +61,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load(path).convert_alpha()
 
     # handle user input
-    def move(self, screen, event):
+    def move(self, screen, event, CameraX):
         
         # set moving_direction_x parameter based on user input, except for when skater is in the air (is_jumping parameter)
         keystate = pygame.key.get_pressed()
@@ -94,31 +95,32 @@ class Player(pygame.sprite.Sprite):
 
 
         # call movement functions after handling user input
-        self.call_movement_functions()
+        self.call_movement_functions(CameraX)
 
     
-    def call_movement_functions(self):
-        self.accelerate()
-        self.decelerate()
+    def call_movement_functions(self, CameraX):
+        self.accelerate(CameraX)
+        self.decelerate(CameraX)
+        self.check_crash()
         self.handle_images()
 
 
-    def accelerate(self):
+    def accelerate(self, CameraX):
         if (not self.is_colliding_r and self.moving_direction_x > 0) \
         or (not self.is_colliding_l and self.moving_direction_x < 0):
-            self.rect.x += self.speed * self.moving_direction_x
+            self.rect.x += self.speed * self.moving_direction_x - CameraX
             #self.rect.x += self.v * self.v / self.a * self.moving_direction_x
 
             #if self.v < 10:
             #    self.v *= 1.2
         
 
-    def decelerate(self):
+    def decelerate(self, CameraX):
 
         if not self.is_colliding_r and not self.is_colliding_l:
 
             if self.v > self.ZERO and self.is_decelerating:
-                self.rect.x += self.v * self.v / self.a * self.moving_direction_x
+                self.rect.x += self.v * self.v / self.a * self.moving_direction_x - CameraX
             
                 # decrease velocity using drag parameter but only if on the ground
                 if not self.is_jumping:
@@ -138,7 +140,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.y -= F
  
             # Change velocity
-            self.v_jump -= 1
+            self.v_jump -= 0.5
 
 
             ## this code was supposed to make jumps smoother
@@ -156,7 +158,7 @@ class Player(pygame.sprite.Sprite):
             #if self.rect.bottom >= 700:
             #    self.stop_movement_y(700)
 
-    
+    # fall means move on y axis due to gravity until player lands on an obstacle
     def fall(self):
         if not self.is_colliding_b:
             self.rect.y += self.m * self.G
@@ -175,7 +177,20 @@ class Player(pygame.sprite.Sprite):
         self.is_jumping = False
         self.is_falling = False
 
+    
+    def check_crash(self):
+        if self.moving_direction_x != 0 and(self.is_colliding_l or self.is_colliding_r):
+            self.is_crash = True
+
 
     def handle_images(self):
-        if self.is_manual: self.image = pygame.image.load(images.PLAYER_MANUAL).convert_alpha()
-        else: self.image = pygame.image.load(images.PLAYER_MAIN).convert_alpha()
+
+        if self.is_jumping or self.is_manual:
+           if self.moving_direction_x >= 0: img = images.PLAYER_MANUAL
+           if self.moving_direction_x < 0: img = images.PLAYER_NOSE_MANUAL
+
+        elif self.is_crash: img = images.PLAYER_CRASH
+
+        else: self.image = img = images.PLAYER_MAIN
+        
+        self.image = pygame.image.load(img).convert_alpha()
