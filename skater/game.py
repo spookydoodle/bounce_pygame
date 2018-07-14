@@ -167,6 +167,7 @@ class Game(State):
 
         self.all_sprites = []
         self.all_sprites_group = pygame.sprite.Group()
+        self.obstacles = []
 
         self.player = Player(speed = 4)
         self.player.rect.x = 100
@@ -204,7 +205,6 @@ class Game(State):
             self.new_level = False
 
         if not self.game_over:
-
             if not self.won_level:
                 ##if pygame.time.get_ticks() > 15000 * self.t_shuffle:
                 ##    self.t_shuffle += 1
@@ -221,8 +221,11 @@ class Game(State):
 
                 self.check_collisions()
                 self.player.move(screen, event, self.CameraX)
-                self.player.fall()
-                self.player.jump()
+
+                # The player cannot fall lower than the highest of obstacles under him
+                falling_limit = min(obstacle.rect.top for obstacle in self.obstacles_under())
+                self.player.fall(falling_limit)
+                self.player.jump(falling_limit)
                 self.change_obstacles_pos_cam()
                 self.check_game_result()
 
@@ -247,17 +250,25 @@ class Game(State):
         obstacle3 = Obstacle(image = pygame.Surface([50, 700]), x = 0, y = 0)
 
         obstacle4 = Obstacle(image = pygame.Surface([50, 700]), x = 1950, y = 0)
+
+        obstacles = [ground, obstacle2, obstacle3, obstacle4]
         
-        self.all_sprites.append(ground)
-        self.all_sprites_group.add(ground)
-        self.all_sprites.append(obstacle2)
-        self.all_sprites_group.add(obstacle2)
-        self.all_sprites.append(obstacle3)
-        self.all_sprites_group.add(obstacle3)
-        self.all_sprites.append(obstacle4)
-        self.all_sprites_group.add(obstacle4)
+        for obstacle in obstacles:
+            self.all_sprites.append(obstacle)
+            self.all_sprites_group.add(obstacle)
+
+        self.obstacles = obstacles
                
-    
+    def obstacles_under(self):
+        """
+        All the obstacles currently positioned under the player
+        """
+        ans = [
+            obstacle
+            for obstacle in self.obstacles
+            if obstacle.rect.left < self.player.rect.right and obstacle.rect.right > self.player.rect.right]
+        return ans
+
     def change_obstacles_pos_cam(self):
         for sprite in self.all_sprites: sprite.rect.x -= self.CameraX
 

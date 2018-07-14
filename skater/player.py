@@ -131,17 +131,17 @@ class Player(pygame.sprite.Sprite):
                 self.stop_movement_x()
                 
 
-    def jump(self):
+    def jump(self, floor):
         if self.is_jumping:
             # Calculate force (F)
             F = self.m * self.v_jump
             
-            # Change position
             self.rect.y -= F
- 
-            # Change velocity
             self.v_jump -= 0.5
 
+            floor_hit = self.rect.bottom > floor
+            if floor_hit:
+                self.stop_movement_y(floor)
 
             ## this code was supposed to make jumps smoother
 
@@ -159,10 +159,13 @@ class Player(pygame.sprite.Sprite):
             #    self.stop_movement_y(700)
 
     # fall means move on y axis due to gravity until player lands on an obstacle
-    def fall(self):
-        if not self.is_colliding_b:
+    def fall(self, floor):
+        if not self.is_colliding_b and not self.rect.bottom >= floor:
             self.rect.y += self.m * self.G
 
+            floor_hit = self.rect.bottom > floor
+            if floor_hit:
+                self.stop_movement_y(floor)
 
     def stop_movement_x(self):
         self.is_decelerating = False
@@ -171,7 +174,7 @@ class Player(pygame.sprite.Sprite):
 
     
     def stop_movement_y(self, y):
-        self.rect.bottom = y + 1
+        self.rect.bottom = y
         self.v_jump = self.G * self.v0
         self.v *= self.ELASTICITY
         self.is_jumping = False
