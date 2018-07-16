@@ -224,8 +224,7 @@ class Game(State):
 
                 # The player cannot fall lower than the highest of obstacles under him
                 falling_limit = min(obstacle.rect.top for obstacle in self.obstacles_under())
-                self.player.fall(falling_limit)
-                self.player.jump(falling_limit)
+                self.player.move_y(falling_limit)
                 self.change_obstacles_pos_cam()
                 self.check_game_result()
 
