@@ -34,7 +34,7 @@ class Player(pygame.sprite.Sprite):
         # separate velocities for movement on x axis (right/left) and y axis (jump)
         self.a = 3
         self.v = self.v0 = speed * 1.8
-        self.v_jump = self.G * self.v0
+        self.v_y = self.G * self.v0
         self.m = 4
         self.is_jumping = False
         self.is_falling = False
@@ -87,7 +87,7 @@ class Player(pygame.sprite.Sprite):
             #    self.stop_movement_x()
 
             if event.key in CONTROLS["G_OLLIE"]:
-                self.is_jumping = True
+                self.jump()
 
         elif event.type == pygame.KEYUP:
             self.is_decelerating = True
@@ -131,14 +131,21 @@ class Player(pygame.sprite.Sprite):
                 self.stop_movement_x()
                 
 
-    def jump(self, floor):
-        if self.is_jumping:
-            # Calculate force (F)
-            F = self.m * self.v_jump
-            
-            self.rect.y -= F
-            self.v_jump -= 0.5
+    def jump(self):
+        self.is_jumping = True
+        self.v_y = -self.v0  * 5 # NOTE: some random number
 
+    def move_y(self, floor):
+        if not self.is_colliding_b:
+            # Calculate y-acceleration (gravity pull)
+            a = self.m * self.G
+
+            # Update y-speed with new acceleration
+            self.v_y += a
+
+            # Update y-position
+            self.rect.y += self.v_y
+        
             floor_hit = self.rect.bottom > floor
             if floor_hit:
                 self.stop_movement_y(floor)
@@ -146,26 +153,17 @@ class Player(pygame.sprite.Sprite):
             ## this code was supposed to make jumps smoother
 
             #if not self.is_falling:
-            #    self.v_jump *= self.DRAG
+            #    self.v_y *= self.DRAG
             #else:
-            #    self.v_jump = (-1) * abs(self.v_jump) * 1/self.DRAG
+            #    self.v_y = (-1) * abs(self.v_y) * 1/self.DRAG
 
-            #if self.v_jump < self.ZERO:
+            #if self.v_y < self.ZERO:
             #    self.is_falling = True
 
 
             ## If ground is reached, reset variables.
             #if self.rect.bottom >= 700:
             #    self.stop_movement_y(700)
-
-    # fall means move on y axis due to gravity until player lands on an obstacle
-    def fall(self, floor):
-        if not self.is_colliding_b and not self.rect.bottom >= floor:
-            self.rect.y += self.m * self.G
-
-            floor_hit = self.rect.bottom > floor
-            if floor_hit:
-                self.stop_movement_y(floor)
 
     def stop_movement_x(self):
         self.is_decelerating = False
@@ -175,7 +173,7 @@ class Player(pygame.sprite.Sprite):
     
     def stop_movement_y(self, y):
         self.rect.bottom = y
-        self.v_jump = self.G * self.v0
+        self.v_y = self.G * self.v0
         self.v *= self.ELASTICITY
         self.is_jumping = False
         self.is_falling = False
