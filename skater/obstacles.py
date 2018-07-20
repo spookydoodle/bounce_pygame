@@ -17,3 +17,6 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+
+    def is_under(self, other_rect):
+        return self.rect.bottom > other_rect.bottom and self.rect.left < other_rect.right and self.rect.right > other_rect.left

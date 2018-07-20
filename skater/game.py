@@ -265,7 +265,7 @@ class Game(State):
         ans = [
             obstacle
             for obstacle in self.obstacles
-            if obstacle.rect.left < self.player.rect.right and obstacle.rect.right > self.player.rect.right]
+            if obstacle.is_under(self.player.rect)]
         return ans
 
     def change_obstacles_pos_cam(self):
