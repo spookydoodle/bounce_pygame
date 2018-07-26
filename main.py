@@ -3,6 +3,8 @@ import string
 import pygame
 from pygame.locals import *
 from skater.game import *
+from skater.menu import *
+from skater.controls import *
 from skater import images
 
 

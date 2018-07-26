@@ -102,7 +102,7 @@ class Player(pygame.sprite.Sprite):
     
     def call_movement_functions(self, CameraX):
         self.move_x(CameraX)
-        self.check_crash()
+        #self.check_crash()
         self.handle_images()
 
 

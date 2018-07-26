@@ -1,160 +1,7 @@
-import pygame
-from pygame.locals import *
+from .state import *
 from .player import *
 from .obstacles import *
 from .score import *
-from .dicts import *
-
-
-class State:
-    
-    def __init__(self):
-        self.active_state = ""
-        self.exit = False
-
-    def process_events(self):
-        raise NotImplementedError
-    
-    def run(self):
-        raise NotImplementedError
-    
-    def display_frame(self, background_image):
-        raise NotImplementedError
-
-    def check_exit(self):
-        if self.exit: return True
-        else: return False
-
-
-class Menu(State):
-    
-    OPTIONS = ["Play", 
-               "Controls", 
-               "Exit"]
-
-    def __init__(self):
-        State.__init__(self)
-        self.active_state = "Menu"
-        self.selected_index = 0
-
-
-    def _next_index(self):
-        max = len(self.OPTIONS)
-        return (self.selected_index + 1) % max
-
-
-    def _previous_index(self):
-        max = len(self.OPTIONS)
-        return (self.selected_index - 1) % max
-
-
-    def process_events(self):
-
-            if self.active_state == "Play": return Game()
-            elif self.active_state == "Controls" : return Controls()
-            elif self.active_state in ("Menu", "Next_Level"): return self
-            #elif self.active_state == "Exit": return self; self.exit = True
-            elif self.active_state == "Exit": pygame.quit()
-
-    
-    def run(self, screen, event): 
-        
-        if event.type == pygame.KEYDOWN:
-
-            if event.key in CONTROLS["M_DOWN"] and self.selected_index < (len(self.OPTIONS) - 1):
-                self.selected_index = self._next_index()
-
-            if event.key in CONTROLS["M_UP"] and self.selected_index > 0:
-                self.selected_index = self._previous_index()
-
-            if event.key in CONTROLS["M_SELECT"]:
-               #if self.selected_index == 0: self.active_state = "game"
-               #if self.selected_index == 1: self.active_state = "controls"
-               #if self.selected_index == 2: pygame.quit()
-               self.active_state = self.OPTIONS[self.selected_index]
-
-
-    def display_frame(self, screen, background_image):
-        font = pygame.font.SysFont('Arial', 60)
-        BLACK = (0, 0, 0); WHITE = (255, 255, 255); RED = (255, 0, 0)
-        selected_marker = ">"; unselected_marker = " "
-
-        # clean game area
-        screen.blit(background_image, (0, 0))
-
-        for i in range(len(self.OPTIONS)):
-            if i == self.selected_index: text = "{} {}".format(selected_marker, self.OPTIONS[i])
-            else: text = "{} {}".format(unselected_marker, self.OPTIONS[i])
-
-            draw_text(screen, text, font, BLACK, "L", 550, 250 + i*100)
-
-        pygame.display.update()
-
-
-class Controls(State):
-    
-    # dictionary with assignment and descriptions of control keys
-    CONTROLS_DESC = [["Right", "D / Right Arrow"],
-                ["Left", "A / Left Arrow"],
-                ["Jump / Ollie", "Space"],
-                ["Manual / Grind", "W / Up Arrow"],
-                ["Back", "B / Return"]
-                ]
-
-
-    def __init__(self):
-        State.__init__(self)
-        self.active_state = "Controls"
-        self.selected_index = 4
-
-
-    def _next_index(self):
-        max = len(self.CONTROLS_DESC)
-        return (self.selected_index + 1) % max
-
-
-    def _previous_index(self):
-        max = len(self.CONTROLS_DESC)
-        return (self.selected_index - 1) % max
-
-
-    def process_events(self):
-
-            if self.active_state == "Back": return Menu()
-            else: return self
-            
-    
-    def run(self, screen, event): 
-        
-        if event.type == pygame.KEYDOWN:
-
-            if event.key in CONTROLS["M_DOWN"] and self.selected_index < (len(self.CONTROLS_DESC) - 1):
-                self.selected_index = self._next_index()
-
-            if event.key in CONTROLS["M_UP"] and self.selected_index > 0:
-                self.selected_index = self._previous_index()
-
-            if event.key in CONTROLS["M_SELECT"]:
-               self.active_state = self.CONTROLS_DESC[self.selected_index][0]
-
-
-    def display_frame(self, screen, background_image):
-        font = pygame.font.SysFont('Arial', 30)
-        BLACK = (0, 0, 0); WHITE = (255, 255, 255); RED = (255, 0, 0)
-        selected_marker = ">"; unselected_marker = " "
-
-        # clean game area
-        screen.blit(background_image, (0, 0))
-
-        
-        for j in range(len(self.CONTROLS_DESC[0])):
-            for i in range(len(self.CONTROLS_DESC)):
-                if (j == 0 and i == self.selected_index): text = "{} {}".format(selected_marker, self.CONTROLS_DESC[i][j])
-                else: text = "{} {}".format(unselected_marker, self.CONTROLS_DESC[i][j])
-
-                draw_text(screen, text, font, BLACK, "L", 550 + j*200, 250 + i*50)
-
-        pygame.display.update()
 
 
 class Game(State):
@@ -163,7 +10,6 @@ class Game(State):
         State.__init__(self)
         self.active_state = "game"
         self.level = 0
-
 
         self.all_sprites = []
         self.all_sprites_group = pygame.sprite.Group()
@@ -174,11 +20,7 @@ class Game(State):
         self.player.rect.bottom = 500
         self.all_sprites_group.add(self.player)
 
-        ##self.keyword = Keyword()
-        ##self.alphabet = Alphabet()
         self.score = Score(5)
-
-        ##self.t_shuffle = 0
 
         self.game_over = False
         self.won_level = False
@@ -358,6 +200,7 @@ class Game(State):
     def display_frame(self, screen, background_image):
 
         WHITE = (255, 255, 255)
+        WHITE = (255, 255, 255)
         BLACK = (0, 0, 0)
         
         font = pygame.font.SysFont('Arial', 40)
@@ -426,13 +269,3 @@ class Game(State):
         
         for n, result in enumerate(game_results_list):
             draw_text(screen, result, font, color, "R", screen.get_rect().width - 10, (10 + n*30))
-
-
-def draw_text(screen, text, font, color, side, side_px, top_px):
-    text_screen = font.render(text, False, color)
-    text_screen_rect = text_screen.get_rect()
-    text_screen_rect.top = top_px
-    if side == "R": text_screen_rect.right = side_px
-    if side == "L": text_screen_rect.left = side_px
-
-    screen.blit(text_screen, text_screen_rect)
