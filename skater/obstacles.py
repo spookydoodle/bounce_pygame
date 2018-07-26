@@ -16,29 +16,6 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-
-
-    # this is still working/testing version of this function...
-    def create_obstacles(self):
-        
-        self.all_sprites_group = pygame.sprite.Group()
-        self.all_sprites = []
-
-        ground = Obstacle(image = pygame.Surface([2000, 50]), x = 0, y = 700)
-
-        obstacle2 = Obstacle(image = pygame.Surface([400, 25]), x = 500, y = 675)
-
-        obstacle3 = Obstacle(image = pygame.Surface([50, 700]), x = 0, y = 0)
-
-        obstacle4 = Obstacle(image = pygame.Surface([50, 700]), x = 1950, y = 0)
-
-        obstacles = [ground, obstacle2, obstacle3, obstacle4]
-        
-        for obstacle in obstacles:
-            self.all_sprites.append(obstacle)
-            self.all_sprites_group.add(obstacle)
-
-        self.obstacles = obstacles
                
 
     def obstacles_under(self):

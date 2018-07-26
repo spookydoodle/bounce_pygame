@@ -6,3 +6,8 @@ def draw_text(screen, text, font, color, side, side_px, top_px):
     if side == "L": text_screen_rect.left = side_px
 
     screen.blit(text_screen, text_screen_rect)
+
+
+def draw_sprite(screen, sprite):
+
+    screen.blit(sprite.image, sprite.rect)

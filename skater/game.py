@@ -12,15 +12,12 @@ class Game(State):
         self.active_state = "game"
         self.level = 0
 
-        self.all_sprites = []
-        self.all_sprites_group = pygame.sprite.Group()
-        self.obstacles = []
+        self.game_board = GameBoard([])
 
         self.player = Player(speed = 4)
         self.player.rect.x = 100
         self.player.rect.bottom = 500
-        self.all_sprites_group.add(self.player)
-
+        
         self.score = Score(3)
 
         self.game_over = False
@@ -39,7 +36,7 @@ class Game(State):
         
         if self.new_level:
             self.level += 1
-            self.create_obstacles()
+            self.game_board.obstacles = self.create_obstacles()
             self.player.rect.x = 100
             self.player.rect.bottom = 700
             self.new_level = False
@@ -61,7 +58,6 @@ class Game(State):
 
                 # The player cannot fall lower than the highest of obstacles under him
                 falling_limit = min(obstacle.rect.top for obstacle in self.obstacles_under())
-                print(self.obstacles_under())
                 self.player.move_y(falling_limit)
                 self.change_obstacles_pos_cam()
                 self.check_game_result()
@@ -76,9 +72,6 @@ class Game(State):
     
     # this is still working/testing version of this function...
     def create_obstacles(self):
-        
-        self.all_sprites_group = pygame.sprite.Group()
-        self.all_sprites = []
 
         ground = Obstacle(image = pygame.Surface([2000, 50]), x = 0, y = 700)
 
@@ -90,11 +83,7 @@ class Game(State):
 
         obstacles = [ground, obstacle2, obstacle3, obstacle4]
         
-        for obstacle in obstacles:
-            self.all_sprites.append(obstacle)
-            self.all_sprites_group.add(obstacle)
-
-        self.obstacles = obstacles
+        return obstacles
                
 
     def obstacles_under(self):
@@ -103,13 +92,13 @@ class Game(State):
         """
         ans = [
             obstacle
-            for obstacle in self.obstacles
+            for obstacle in self.game_board.obstacles
             if obstacle.is_under(self.player.rect)]
         return ans
 
 
     def change_obstacles_pos_cam(self):
-        for sprite in self.all_sprites: sprite.rect.x -= self.CameraX
+        for sprite in self.game_board.obstacles: sprite.rect.x -= self.CameraX
 
 
     def check_collisions(self):
@@ -121,7 +110,7 @@ class Game(State):
         self.player.is_colliding_b = False
 
         # set collision flags if player collides with an obstacle
-        collision_list = pygame.sprite.spritecollide(self.player, self.all_sprites, False)
+        collision_list = pygame.sprite.spritecollide(self.player, self.game_board.obstacles, False)
         
         for obstacle in collision_list:
             
@@ -130,7 +119,6 @@ class Game(State):
             #self.check_collision_t(obstacle)
             self.check_collision_b(obstacle)
 
-        print(self.player.is_colliding_r, self.player.is_colliding_l, self.player.is_colliding_b)
 
     # check collision player_right - obstacle_left
     def check_collision_r(self, obstacle):
@@ -236,8 +224,10 @@ class Game(State):
         ## draw ground
         #self.draw_ground(screen, color)
 
-        # draw alphabet letters
-        self.all_sprites_group.draw(screen) 
+        # draw sprites (player and obstacles)
+        draw_sprite(screen, self.player)
+        for sprite in self.game_board.obstacles:
+            draw_sprite(screen, sprite) 
 
         # Draw scores in right top corner
         self.draw_game_results(screen, self.score, color)
