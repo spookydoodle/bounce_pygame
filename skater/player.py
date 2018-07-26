@@ -8,8 +8,8 @@ from skater import images
 class Player(pygame.sprite.Sprite):
 
     # these parameters are used to decrease velocity when decelerating
-    DRAG = 0.7
-    ZERO = 0.000001
+    DRAG = 0.9
+    ZERO = 0.01
 
     # gravity parameter used for relating jumping velocity to main velocity G * v
     G = 0.9
@@ -33,7 +33,7 @@ class Player(pygame.sprite.Sprite):
         # acceleration, velocity, mass - used for acceleration and deceleration. 
         # separate velocities for movement on x axis (right/left) and y axis (jump)
         self.a = 3
-        self.v = self.v0 = speed * 1.8
+        self.v_x = self.v0 = speed * 1.8
         self.v_y = self.G * self.v0
         self.m = 4
         self.is_jumping = False
@@ -71,9 +71,11 @@ class Player(pygame.sprite.Sprite):
             # here need to change to also use the dictionary CONTROLS - tbd later
             if (keystate[K_RIGHT] or keystate[K_d]) and self.rect.x < (screen.get_size()[0] - self.rect.width):
                 self.moving_direction_x = 1
+                self.speed = self.v0
 
             if (keystate[K_LEFT] or keystate[K_a]) and self.rect.x > 0: 
                 self.moving_direction_x = -1
+                self.speed = self.v0
 
 
         # set flags for tricks based on user input
@@ -99,37 +101,40 @@ class Player(pygame.sprite.Sprite):
 
     
     def call_movement_functions(self, CameraX):
-        self.accelerate(CameraX)
-        self.decelerate(CameraX)
+        self.move_x(CameraX)
         self.check_crash()
         self.handle_images()
 
 
-    def accelerate(self, CameraX):
-        if (not self.is_colliding_r and self.moving_direction_x > 0) \
-        or (not self.is_colliding_l and self.moving_direction_x < 0):
+    def move_x(self, CameraX):
+        # check if there was a collision in the direction of movement
+        if self.moving_direction_x > 0:
+            # moving to the right -> check if the player is blocked on the right hand side
+            blocked = self.is_colliding_r
+        elif self.moving_direction_x < 0:
+            # moving to the left
+            blocked = self.is_colliding_l
+        else:
+            # not moving -> don't care
+            blocked = False
+
+        if blocked:
+            self.stop_movement_x()
+        else:
+            # update the position according to previously computed speed
             self.rect.x += self.speed * self.moving_direction_x - CameraX
-            #self.rect.x += self.v * self.v / self.a * self.moving_direction_x
 
-            #if self.v < 10:
-            #    self.v *= 1.2
-        
-
-    def decelerate(self, CameraX):
-
-        if not self.is_colliding_r and not self.is_colliding_l:
-
-            if self.v > self.ZERO and self.is_decelerating:
-                self.rect.x += self.v * self.v / self.a * self.moving_direction_x - CameraX
-            
+            # update the speed for the next iteration
+            if not self.is_jumping:
                 # decrease velocity using drag parameter but only if on the ground
-                if not self.is_jumping:
-                    self.v *= self.DRAG 
+                self.speed *= self.DRAG
 
-            # if velocity reaches 0.00001 reset to initial velocity value v0
-            elif self.v <= self.ZERO:
-                self.stop_movement_x()
-                
+                # decrease further if `is_decelerating` set explicitly
+                self. speed *= self.DRAG
+
+            # if speed is below a threshold, set it to zero
+            if self.speed <= self.ZERO:
+                self.speed = 0
 
     def jump(self):
         self.is_jumping = True
@@ -168,13 +173,13 @@ class Player(pygame.sprite.Sprite):
     def stop_movement_x(self):
         self.is_decelerating = False
         self.moving_direction_x = 0
-        self.v = self.v0
+        self.v_x = 0
 
     
     def stop_movement_y(self, y):
         self.rect.bottom = y
         self.v_y = self.G * self.v0
-        self.v *= self.ELASTICITY
+        self.v_x *= self.ELASTICITY
         self.is_jumping = False
         self.is_falling = False
 
