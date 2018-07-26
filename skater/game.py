@@ -1,5 +1,6 @@
 from .state import *
 from .player import *
+from .gameboard import *
 from .obstacles import *
 from .score import *
 
@@ -20,7 +21,7 @@ class Game(State):
         self.player.rect.bottom = 500
         self.all_sprites_group.add(self.player)
 
-        self.score = Score(5)
+        self.score = Score(3)
 
         self.game_over = False
         self.won_level = False
@@ -38,9 +39,6 @@ class Game(State):
         
         if self.new_level:
             self.level += 1
-            self.score.update(self.level)
-            ##self.keyword.assign_new(self.keyword.keywords_list)
-            ##self.alphabet.reset()
             self.create_obstacles()
             self.player.rect.x = 100
             self.player.rect.bottom = 700
@@ -48,9 +46,6 @@ class Game(State):
 
         if not self.game_over:
             if not self.won_level:
-                ##if pygame.time.get_ticks() > 15000 * self.t_shuffle:
-                ##    self.t_shuffle += 1
-                ##    self.create_obstacles()
                 
                 if self.player.rect.x > screen.get_rect().midtop[0]:
                     self.CameraX += 0
@@ -66,6 +61,7 @@ class Game(State):
 
                 # The player cannot fall lower than the highest of obstacles under him
                 falling_limit = min(obstacle.rect.top for obstacle in self.obstacles_under())
+                print(self.obstacles_under())
                 self.player.move_y(falling_limit)
                 self.change_obstacles_pos_cam()
                 self.check_game_result()
@@ -100,6 +96,7 @@ class Game(State):
 
         self.obstacles = obstacles
                
+
     def obstacles_under(self):
         """
         All the obstacles currently positioned under the player
@@ -110,8 +107,10 @@ class Game(State):
             if obstacle.is_under(self.player.rect)]
         return ans
 
+
     def change_obstacles_pos_cam(self):
         for sprite in self.all_sprites: sprite.rect.x -= self.CameraX
+
 
     def check_collisions(self):
         var1 = (self.player.is_colliding_r, self.player.is_colliding_l, self.player.is_colliding_b, self.player.rect.bottom)
@@ -263,9 +262,9 @@ class Game(State):
 
     def draw_game_results(self, screen, score, color):
         font = pygame.font.SysFont('Arial', 20)
-        game_results_list = ["Level: {}".format(self.level), 
-                             "Total score: {}".format(str(score.total_score)), 
-                             "{} mistakes to hang!".format(str(score.current_score))]
+        game_results_list = ["Level: {}".format(self.level),
+                             "Lives: {}".format(str(score.number_of_lives)),
+                             "Score: {}".format(str(score.total_score))]
         
         for n, result in enumerate(game_results_list):
             draw_text(screen, result, font, color, "R", screen.get_rect().width - 10, (10 + n*30))

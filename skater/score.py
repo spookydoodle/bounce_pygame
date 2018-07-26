@@ -1,25 +1,22 @@
 class Score:
     
-    def __init__(self, max_trials):
-        self.max_trials = max_trials
-        self.current_score = max_trials
+    # player receives initial number of lives, number_of_lives represents current number of lives
+    # total_score is increased once player does skating tricks 
+    def __init__(self, init_number_of_lives):
+        self.init_number_of_lives = init_number_of_lives
+        self.number_of_lives = init_number_of_lives
         self.total_score = 0
 
 
-    def decrease_current(self, n = 1):
-        self.current_score -= n
+    def decrease_lives(self):
+        self.number_of_lives -= 1
 
-
-    def update(self, level):
-        self.total_score += self.current_score
-        self.current_score = self.max_trials
-
-        # every three levels user receives one trial less with min number of trials smaller than max number of trials set in the game
-        n = level // 4
-        if n < self.max_trials:
-            self.current_score -= n
+    
+    # the greater the level, more points player receives for tricks
+    def add_points(self, level):
+        self.total_score += 10 * level
 
 
     def reset(self):
-        self.current_score = self.max_trials
+        self.number_of_lives = self.init_number_of_lives
         self.total_score = 0

@@ -19,8 +19,6 @@ size = width, height = (1280, 720)
 screen = pygame.display.set_mode(size)
 ##screen.blit(background_image, (0, 0))
 
-##Keyword.initialize_list()
-
 done = False
 clock = pygame.time.Clock()
 game_state = Menu()

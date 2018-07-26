@@ -1,6 +1,5 @@
 import pygame
 from pygame.locals import *
-from .dicts import *
 
 
 class Obstacle(pygame.sprite.Sprite):
