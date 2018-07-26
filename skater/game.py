@@ -3,6 +3,7 @@ from .player import *
 from .gameboard import *
 from .obstacles import *
 from .score import *
+from skater.destination import Destination
 
 
 class Game(State):
@@ -27,12 +28,14 @@ class Game(State):
         self.CameraX = 0
 
 
-    def process_events(self):
-        if self.active_state == "Menu": return Menu()
-        else: return self
+    def next_destination(self):
+        if self.active_state == "Menu": return Desination.MENU
+        elif self.active_state == "Exit": return Destination.EXIT
 
     
     def run(self, screen, event):
+        if event.type == pygame.KEYDOWN and event.key in CONTROLS["QUIT"]:
+            self.active_state = "Exit"
         
         if self.new_level:
             self.level += 1

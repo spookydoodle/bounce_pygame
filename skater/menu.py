@@ -1,6 +1,7 @@
 from .state import *
 from .game import *
 from .controls import *
+from .destination import Destination
 
 
 class Menu(State):
@@ -25,13 +26,11 @@ class Menu(State):
         return (self.selected_index - 1) % max
 
 
-    def process_events(self):
+    def next_destination(self):
 
-            if self.active_state == "Play": return Game()
-            elif self.active_state == "Controls" : return Controls()
-            elif self.active_state in ("Menu", "Next_Level"): return self
-            #elif self.active_state == "Exit": return self; self.exit = True
-            elif self.active_state == "Exit": pygame.quit()
+            if self.active_state == "Play": return Destination.GAME
+            elif self.active_state == "Controls" : return Destination.CONTROLS
+            elif self.active_state == "Exit": return Destination.EXIT
 
     
     def run(self, screen, event): 
