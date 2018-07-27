@@ -1,3 +1,4 @@
+from .destination import Destination
 from .state import *
 
 
@@ -28,10 +29,9 @@ class Controls(State):
         return (self.selected_index - 1) % max
 
 
-    def process_events(self):
+    def next_destination(self):
 
-            if self.active_state == "Back": return Menu()
-            else: return self
+            if self.active_state == "Back": return Destination.MENU
             
     
     def run(self, screen, event): 

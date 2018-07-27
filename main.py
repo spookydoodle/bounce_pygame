@@ -5,6 +5,9 @@ from pygame.locals import *
 from skater.game import *
 from skater.menu import *
 from skater.controls import *
+from skater.exit import Exit
+from skater.router import Router
+from skater.destination import Destination
 from skater import images
 
 
@@ -23,12 +26,22 @@ done = False
 clock = pygame.time.Clock()
 game_state = Menu()
 
+router = Router({
+    Destination.MENU: Menu,
+    Destination.CONTROLS: Controls,
+    Destination.GAME: Game,
+    Destination.EXIT: Exit
+})
+
 while not done:
 
     done = game_state.check_exit()
 
-    if game_state.__class__ != game_state.process_events().__class__: 
-        game_state = game_state.process_events()
+    destination = game_state.next_destination()
+
+    # reroute only if the current `game_state` pointed to a destination
+    if destination:
+        game_state = router.route(destination)
 
     # Get the next queued event 
     event = pygame.event.poll()
