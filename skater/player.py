@@ -45,8 +45,8 @@ class Player(pygame.sprite.Sprite):
         self.is_crash = False
 
         # these parameters are used to stop the player after hitting  obstacle on horizontal axis (x)
-        self.is_colliding_r = False
-        self.is_colliding_l = False
+        #self.is_colliding_r = False
+        #self.is_colliding_l = False
         self.is_colliding_t = False
         self.is_colliding_b = False
 
@@ -61,7 +61,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load(path).convert_alpha()
 
     # handle user input
-    def move(self, screen, event, CameraX):
+    def move(self, screen, event, gameboard, CameraX):
         
         # set moving_direction_x parameter based on user input, except for when skater is in the air (is_jumping parameter)
         keystate = pygame.key.get_pressed()
@@ -97,29 +97,33 @@ class Player(pygame.sprite.Sprite):
 
 
         # call movement functions after handling user input
-        self.call_movement_functions(CameraX)
+        self.call_movement_functions(gameboard, CameraX)
 
     
-    def call_movement_functions(self, CameraX):
-        self.move_x(CameraX)
+    def call_movement_functions(self, gameboard, CameraX):
+        self.move_x(gameboard, CameraX)
         #self.check_crash()
         self.handle_images()
 
 
-    def move_x(self, CameraX):
-        # check if there was a collision in the direction of movement
-        if self.moving_direction_x > 0:
-            # moving to the right -> check if the player is blocked on the right hand side
-            blocked = self.is_colliding_r
-        elif self.moving_direction_x < 0:
-            # moving to the left
-            blocked = self.is_colliding_l
-        else:
-            # not moving -> don't care
-            blocked = False
+    def move_x(self, gameboard, CameraX):
+        ## check if there was a collision in the direction of movement
+        #if self.moving_direction_x > 0:
+        #    # moving to the right -> check if the player is blocked on the right hand side
+        #    blocked = self.is_colliding_r
+        #elif self.moving_direction_x < 0:
+        #    # moving to the left
+        #    blocked = self.is_colliding_l
+        #else:
+        #    # not moving -> don't care
+        #    blocked = False
 
-        if blocked:
+
+        if (self.moving_direction_x > 0 and len(gameboard.obstacles_right(self)) > 0) \
+            or (self.moving_direction_x < 0 and len(gameboard.obstacles_left(self)) > 0):
+
             self.stop_movement_x()
+
         else:
             # update the position according to previously computed speed
             self.rect.x += self.speed * self.moving_direction_x - CameraX
@@ -140,7 +144,7 @@ class Player(pygame.sprite.Sprite):
         self.is_jumping = True
         self.v_y = -self.v0  * 5 # NOTE: some random number
 
-    def move_y(self, floor):
+    def move_y(self, gameboard, floor):
         if not self.is_colliding_b:
             # Calculate y-acceleration (gravity pull)
             a = self.m * self.G
@@ -184,9 +188,9 @@ class Player(pygame.sprite.Sprite):
         self.is_falling = False
 
     
-    def check_crash(self):
-        if self.moving_direction_x != 0 and(self.is_colliding_l or self.is_colliding_r):
-            self.is_crash = True
+    #def check_crash(self):
+    #    if self.moving_direction_x != 0 and(self.is_colliding_l or self.is_colliding_r):
+    #        self.is_crash = True
 
 
     def handle_images(self):
