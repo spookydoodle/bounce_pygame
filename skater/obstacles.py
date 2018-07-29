@@ -16,23 +16,33 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
-               
         
-    # collision player bottom - obstacle top
     def is_under(self, other_rect):
+        """
+        Checks if `self` is located below `other_rect`, regardless of the distance
+        """
         return self.rect.bottom > other_rect.bottom and self.rect.left < other_rect.right and self.rect.right > other_rect.left
-
     
-    # collision player top - obstacle bottom
     def is_over(self, other_rect):
+        """
+        Checks if `self` is located over `other_rect`, regardless of the distance
+        """
         return self.rect.top < other_rect.top and self.rect.left < other_rect.right and self.rect.right > other_rect.left
 
-
-    # collision player right - obstacle left
     def is_colliding_right(self, other_rect):
-        return self.rect.left >= other_rect.left and self.rect.left <= other_rect.right and self.rect.top < other_rect.bottom
+        """
+        Checks for a collision (overlap) on the right border of `self`
 
+        (collision player right - obstacle left)
+        """
+        return self.rect.right >= other_rect.left and self.rect.right <= other_rect.right and self.rect.top < other_rect.bottom and self.rect.bottom > other_rect.top
     
-    # collision player left - obstacle right
     def is_colliding_left(self, other_rect):
-        return self.rect.right >= other_rect.left and self.rect.right <= other_rect.right and self.rect.top < other_rect.bottom
+        """
+        Checks for a collision (overlap) on the left border of `self`
+
+        (collision player left - obstacle right)
+        """
+        return self.rect.left <= other_rect.right and self.rect.left >= other_rect.left and self.rect.top < other_rect.bottom and self.rect.bottom > other_rect.top
+
+#TODO: is_colliding_[top,bottom]
