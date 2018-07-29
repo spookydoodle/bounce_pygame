@@ -83,10 +83,6 @@ class TestIsUnder(TestObstacle):
         self.assertTrue(
             self.obstacle.is_under(self.rect_above))
 
-    def test_is_under_is_true_for_rect_far_above(self):
-        self.assertTrue(
-            self.obstacle.is_under(self.rect_far_above))
-
     def test_is_under_is_false_for_rect_below(self):
         self.assertFalse(
             self.obstacle.is_under(self.rect_below))
@@ -96,21 +92,43 @@ class TestIsUnder(TestObstacle):
             self.obstacle.is_under(self.rect_left))
 
 class TestIsOver(TestObstacle):
-    def test_is_over_is_true_for_rect_below(self):
+    def test_is_true_for_rect_below(self):
         self.assertTrue(
             self.obstacle.is_over(self.rect_below))
 
-    def test_is_over_is_true_for_rect_far_below(self):
-        self.assertTrue(
-            self.obstacle.is_over(self.rect_far_below))
-
-    def test_is_over_is_false_for_rect_above(self):
+    def test_is_false_for_rect_above(self):
         self.assertFalse(
             self.obstacle.is_over(self.rect_above))
 
-    def test_is_over_is_false_for_rect_on_the_side(self):
+    def test_is_false_for_rect_on_the_side(self):
         self.assertFalse(
             self.obstacle.is_over(self.rect_left))
+
+class TestIsToTheRight(TestObstacle):
+    def test_is_true_for_rect_on_the_left(self):
+        self.assertTrue(
+            self.obstacle.is_to_the_right(self.rect_left))
+
+    def test_is_false_for_rect_on_the_right(self):
+        self.assertFalse(
+            self.obstacle.is_to_the_right(self.rect_right))
+
+    def test_is_false_for_rect_above(self):
+        self.assertFalse(
+            self.obstacle.is_to_the_right(self.rect_above))
+
+class TestIsToTheLeft(TestObstacle):
+    def test_is_true_for_rect_on_the_right(self):
+        self.assertTrue(
+            self.obstacle.is_to_the_left(self.rect_right))
+
+    def test_is_false_for_rect_on_the_left(self):
+        self.assertFalse(
+            self.obstacle.is_to_the_left(self.rect_left))
+
+    def test_is_false_for_rect_above(self):
+        self.assertFalse(
+            self.obstacle.is_to_the_left(self.rect_above))
 
 class TestIsCollidingRight(TestObstacle):
     def test_is_true_for_rect_overlapping_on_the_right(self):
