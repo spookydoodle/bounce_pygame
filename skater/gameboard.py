@@ -22,21 +22,21 @@ class GameBoard:
 
     def obstacles_right(self, player):
         """
-        All the obstacles currently positioned on the right to the player
+        All the obstacles the player collides with to his right hand side
         """
         ans = [
             obstacle
             for obstacle in self.obstacles
-            if obstacle.is_colliding_right(player.rect)]
+            if obstacle.is_colliding_left(player.rect)]  # the player's right border is the obstacle's left -> check obstacle's left collision
         return ans
 
 
     def obstacles_left(self, player):
         """
-        All the obstacles currently positioned on the left of the player
+        All the obstacles the player collides with to his left hand side
         """
         ans = [
             obstacle
             for obstacle in self.obstacles
-            if obstacle.is_colliding_left(player.rect)]
+            if obstacle.is_colliding_right(player.rect)]  # see `obstacles_right`
         return ans
