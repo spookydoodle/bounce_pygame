@@ -60,8 +60,8 @@ class Game(State):
                 self.player.move(screen, event, self.gameboard, self.CameraX)
 
                 # The player cannot fall lower than the highest of obstacles under him
-                falling_limit = min(obstacle.rect.top for obstacle in self.obstacles_under())
-                self.player.move_y(self.gameboard, falling_limit)
+                #falling_limit = min(obstacle.rect.top for obstacle in self.obstacles_under())
+                self.player.move_y(self.gameboard)
                 self.change_obstacles_pos_cam()
                 self.check_game_result()
 
@@ -187,7 +187,7 @@ class Game(State):
 
 
     def display_frame(self, screen, background_image):
-
+        ######## add self.player, self.Camera to handle CameraX CameraY
         WHITE = (255, 255, 255)
         WHITE = (255, 255, 255)
         BLACK = (0, 0, 0)

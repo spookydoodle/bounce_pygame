@@ -107,44 +107,37 @@ class Player(pygame.sprite.Sprite):
 
 
     def move_x(self, gameboard, CameraX):
-        ## check if there was a collision in the direction of movement
-        #if self.moving_direction_x > 0:
-        #    # moving to the right -> check if the player is blocked on the right hand side
-        #    blocked = self.is_colliding_r
-        #elif self.moving_direction_x < 0:
-        #    # moving to the left
-        #    blocked = self.is_colliding_l
-        #else:
-        #    # not moving -> don't care
-        #    blocked = False
+        # update the position according to previously computed speed
+        self.rect.x += self.speed * self.moving_direction_x - CameraX
 
+        # update the speed for the next iteration
+        if not self.is_jumping:
+            # decrease velocity using drag parameter but only if on the ground
+            self.speed *= self.DRAG
 
-        if (self.moving_direction_x > 0 and len(gameboard.obstacles_right(self)) > 0) \
-            or (self.moving_direction_x < 0 and len(gameboard.obstacles_left(self)) > 0):
+            # decrease further if `is_decelerating` set explicitly
+            self. speed *= self.DRAG
 
-            self.stop_movement_x()
+        # if speed is below a threshold, set it to zero
+        if self.speed <= self.ZERO:
+            self.speed = 0
 
-        else:
-            # update the position according to previously computed speed
-            self.rect.x += self.speed * self.moving_direction_x - CameraX
+        # find x position of the closest obstacle edges on the right and left side of the player
+        limit_right = max(obstacle.rect.left for obstacle in gameboard.obstacles_right(self))
+        limit_left = min(obstacle.rect.right for obstacle in gameboard.obstacles_left(self))
+        print(limit_left, limit_right)
+        print(self.moving_direction_x < 0 and self.rect.left < limit_left, self.rect.left)
 
-            # update the speed for the next iteration
-            if not self.is_jumping:
-                # decrease velocity using drag parameter but only if on the ground
-                self.speed *= self.DRAG
+        # stop movement if collision on the right of the player takes place
+        if self.moving_direction_x > 0 and self.rect.right > limit_right:
+            self.stop_movement_x(limit_right - self.rect.width)
+        
+        # stop movement if collision on the left of the player takes place
+        if self.moving_direction_x < 0 and self.rect.left < limit_left:
+            self.stop_movement_x(limit_left)
+            
 
-                # decrease further if `is_decelerating` set explicitly
-                self. speed *= self.DRAG
-
-            # if speed is below a threshold, set it to zero
-            if self.speed <= self.ZERO:
-                self.speed = 0
-
-    def jump(self):
-        self.is_jumping = True
-        self.v_y = -self.v0  * 5 # NOTE: some random number
-
-    def move_y(self, gameboard, floor):
+    def move_y(self, gameboard):
         if not self.is_colliding_b:
             # Calculate y-acceleration (gravity pull)
             a = self.m * self.G
@@ -154,27 +147,22 @@ class Player(pygame.sprite.Sprite):
 
             # Update y-position
             self.rect.y += self.v_y
-        
+            
+            # floor is the most top horizontal edge of all obstacles in the gameboard
+            floor = min(obstacle.rect.top for obstacle in gameboard.obstacles_under(self))
+
             floor_hit = self.rect.bottom > floor
             if floor_hit:
                 self.stop_movement_y(floor)
 
-            ## this code was supposed to make jumps smoother
 
-            #if not self.is_falling:
-            #    self.v_y *= self.DRAG
-            #else:
-            #    self.v_y = (-1) * abs(self.v_y) * 1/self.DRAG
-
-            #if self.v_y < self.ZERO:
-            #    self.is_falling = True
-
-
-            ## If ground is reached, reset variables.
-            #if self.rect.bottom >= 700:
-            #    self.stop_movement_y(700)
-
-    def stop_movement_x(self):
+    def jump(self):
+        self.is_jumping = True
+        self.v_y = -self.v0  * 5 # NOTE: some random number
+    
+        
+    def stop_movement_x(self, x):
+        self.rect.x = x
         self.is_decelerating = False
         self.moving_direction_x = 0
         self.v_x = 0

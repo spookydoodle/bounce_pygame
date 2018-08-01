@@ -27,7 +27,7 @@ class GameBoard:
         ans = [
             obstacle
             for obstacle in self.obstacles
-            if obstacle.is_colliding_left(player.rect)]  # the player's right border is the obstacle's left -> check obstacle's left collision
+            if obstacle.is_to_the_right(player.rect)]  # the player's right border is the obstacle's left -> check obstacle's left collision
         return ans
 
 
@@ -38,5 +38,5 @@ class GameBoard:
         ans = [
             obstacle
             for obstacle in self.obstacles
-            if obstacle.is_colliding_right(player.rect)]  # see `obstacles_right`
+            if obstacle.is_to_the_left(player.rect)]  # see `obstacles_right`
         return ans

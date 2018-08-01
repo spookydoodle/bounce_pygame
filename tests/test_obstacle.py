@@ -16,11 +16,11 @@ class MockRect:
 
     @property
     def x(self):
-        return (self.left + self.right)
+        return self.left
 
-    @property
+    @property 
     def y(self):
-        return (self.top + self.bottom)
+        return self.top
 
     @property
     def width(self):
