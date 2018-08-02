@@ -41,7 +41,7 @@ class Game(State):
             self.level += 1
             self.gameboard.obstacles = self.create_obstacles()
             self.player.rect.x = 100
-            self.player.rect.bottom = 700
+            self.player.rect.bottom = 500
             self.new_level = False
 
         if not self.game_over:
@@ -55,12 +55,13 @@ class Game(State):
 
                 else: 
                     self.CameraX = 0
+                
+                print([obstacle.rect.left for obstacle in self.gameboard.obstacles], \
+                    [obstacle.rect.right for obstacle in self.gameboard.obstacles], \
+                    self.player.rect.left, self.player.rect.right)
 
-                self.check_collisions()
                 self.player.move(screen, event, self.gameboard, self.CameraX)
-
                 # The player cannot fall lower than the highest of obstacles under him
-                #falling_limit = min(obstacle.rect.top for obstacle in self.obstacles_under())
                 self.player.move_y(self.gameboard)
                 self.change_obstacles_pos_cam()
                 self.check_game_result()
@@ -76,95 +77,21 @@ class Game(State):
     # this is still working/testing version of this function...
     def create_obstacles(self):
 
-        ground = Obstacle(image = pygame.Surface([2000, 50]), x = 0, y = 700)
+        ground = Obstacle(image = pygame.Surface([2000, 50]), x = 0, y = 600)
 
-        obstacle2 = Obstacle(image = pygame.Surface([400, 25]), x = 500, y = 675)
+        obstacle2 = Obstacle(image = pygame.Surface([400, 25]), x = 500, y = 575)
 
-        obstacle3 = Obstacle(image = pygame.Surface([50, 400]), x = 0, y = 300)
+        obstacle3 = Obstacle(image = pygame.Surface([50, 400]), x = 0, y = 200)
 
-        obstacle4 = Obstacle(image = pygame.Surface([50, 400]), x = 1950, y = 300)
+        obstacle4 = Obstacle(image = pygame.Surface([50, 400]), x = 1950, y = 200)
 
         obstacles = [ground, obstacle2, obstacle3, obstacle4]
         
         return obstacles
-               
-
-    def obstacles_under(self):
-        """
-        All the obstacles currently positioned under the player
-        """
-        ans = [
-            obstacle
-            for obstacle in self.gameboard.obstacles
-            if obstacle.is_under(self.player.rect)]
-        return ans
 
 
     def change_obstacles_pos_cam(self):
         for sprite in self.gameboard.obstacles: sprite.rect.x -= self.CameraX
-
-
-    def check_collisions(self):
-        # reset collision flags
-        #self.player.is_colliding_l = False
-        #self.player.is_colliding_r = False
-        self.player.is_colliding_t = False
-        self.player.is_colliding_b = False
-
-        # set collision flags if player collides with an obstacle
-        collision_list = pygame.sprite.spritecollide(self.player, self.gameboard.obstacles, False)
-        
-        for obstacle in collision_list:
-            
-            #self.check_collision_r(obstacle)
-            #self.check_collision_l(obstacle)
-            #self.check_collision_t(obstacle)
-            self.check_collision_b(obstacle)
-
-
-    ## check collision player_right - obstacle_left
-    #def check_collision_r(self, obstacle):
-
-    #    if pygame.sprite.collide_rect(self.player, obstacle) \
-    #        and self.player.rect.left <= obstacle.rect.left \
-    #        and self.player.rect.right >= obstacle.rect.left \
-    #        and self.player.rect.bottom > obstacle.rect.top:
-
-    #        self.player.stop_movement_x()
-    #        self.player.is_colliding_r = True
-
-
-    ## check collision player_left - obstacle_right
-    #def check_collision_l(self, obstacle):
-
-    #    if pygame.sprite.collide_rect(self.player, obstacle) \
-    #        and self.player.rect.left <= obstacle.rect.right \
-    #        and self.player.rect.right >= obstacle.rect.right \
-    #        and self.player.rect.bottom > obstacle.rect.top:
-
-    #        self.player.stop_movement_x()
-    #        self.player.is_colliding_l = True
-
-
-    # check collision player_bottom - obstacle_top - not working yet
-    def check_collision_b(self, obstacle):
-
-        ## this condition is added to avoid changing y position when player collides with a corner of an obstacle (e.g., top left point)
-        #if not self.player.is_colliding_r and not self.player.is_colliding_l:
-
-        # additional conditions are given to handle situations where collision appears on the corners of an obstacle
-        if pygame.sprite.collide_rect(self.player, obstacle) \
-            and self.player.rect.bottom >= obstacle.rect.top \
-            and self.player.rect.top <= obstacle.rect.top \
-            \
-            and self.player.rect.right > obstacle.rect.left \
-            and self.player.rect.left > (obstacle.rect.left - self.player.rect.width) \
-                \
-            and self.player.rect.right < (obstacle.rect.right + self.player.rect.width) \
-            and self.player.rect.left < obstacle.rect.right:
-            
-            self.player.stop_movement_y(obstacle.rect.top)
-            self.player.is_colliding_b = True 
 
 
     def check_game_result(self):

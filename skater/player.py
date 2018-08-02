@@ -123,10 +123,9 @@ class Player(pygame.sprite.Sprite):
             self.speed = 0
 
         # find x position of the closest obstacle edges on the right and left side of the player
-        limit_right = max(obstacle.rect.left for obstacle in gameboard.obstacles_right(self))
+        limit_right = min(obstacle.rect.left for obstacle in gameboard.obstacles_right(self))
         limit_left = min(obstacle.rect.right for obstacle in gameboard.obstacles_left(self))
-        print(limit_left, limit_right)
-        print(self.moving_direction_x < 0 and self.rect.left < limit_left, self.rect.left)
+
 
         # stop movement if collision on the right of the player takes place
         if self.moving_direction_x > 0 and self.rect.right > limit_right:
