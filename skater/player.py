@@ -61,7 +61,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load(path).convert_alpha()
 
     # handle user input
-    def move(self, screen, event, gameboard, CameraX):
+    def move(self, screen, event, gameboard):
         
         # set moving_direction_x parameter based on user input, except for when skater is in the air (is_jumping parameter)
         keystate = pygame.key.get_pressed()
@@ -97,18 +97,18 @@ class Player(pygame.sprite.Sprite):
 
 
         # call movement functions after handling user input
-        self.call_movement_functions(gameboard, CameraX)
+        self.call_movement_functions(gameboard)
 
     
-    def call_movement_functions(self, gameboard, CameraX):
-        self.move_x(gameboard, CameraX)
+    def call_movement_functions(self, gameboard):
+        self.move_x(gameboard)
         #self.check_crash()
         self.handle_images()
 
 
-    def move_x(self, gameboard, CameraX):
+    def move_x(self, gameboard):
         # update the position according to previously computed speed
-        self.rect.x += self.speed * self.moving_direction_x - CameraX
+        self.rect.x += self.speed * self.moving_direction_x
 
         # update the speed for the next iteration
         if not self.is_jumping:
@@ -124,7 +124,7 @@ class Player(pygame.sprite.Sprite):
 
         # find x position of the closest obstacle edges on the right and left side of the player
         limit_right = min(obstacle.rect.left for obstacle in gameboard.obstacles_right(self))
-        limit_left = min(obstacle.rect.right for obstacle in gameboard.obstacles_left(self))
+        limit_left = max(obstacle.rect.right for obstacle in gameboard.obstacles_left(self))
 
 
         # stop movement if collision on the right of the player takes place

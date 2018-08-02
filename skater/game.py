@@ -3,6 +3,7 @@ from .player import *
 from .gameboard import *
 from .obstacles import *
 from .score import *
+from .camera import *
 from skater.destination import Destination
 
 
@@ -25,7 +26,7 @@ class Game(State):
         self.won_level = False
         self.new_level = True
 
-        self.CameraX = 0
+        self.camera = Camera()
 
 
     def next_destination(self):
@@ -46,24 +47,13 @@ class Game(State):
 
         if not self.game_over:
             if not self.won_level:
-                
-                if self.player.rect.x > screen.get_rect().midtop[0]:
-                    self.CameraX += 0
 
-                elif self.player.rect.x < (screen.get_rect().x + 0.2 * screen.get_rect().width):
-                    self.CameraX -= 0
+                # changes x and y parameters of camera depending on the location of the player on the screen
+                self.camera.adjust(screen, self.player)
 
-                else: 
-                    self.CameraX = 0
-                
-                print([obstacle.rect.left for obstacle in self.gameboard.obstacles], \
-                    [obstacle.rect.right for obstacle in self.gameboard.obstacles], \
-                    self.player.rect.left, self.player.rect.right)
-
-                self.player.move(screen, event, self.gameboard, self.CameraX)
+                self.player.move(screen, event, self.gameboard)
                 # The player cannot fall lower than the highest of obstacles under him
                 self.player.move_y(self.gameboard)
-                self.change_obstacles_pos_cam()
                 self.check_game_result()
 
             # You won level screen - press any key to move to next level
@@ -77,21 +67,19 @@ class Game(State):
     # this is still working/testing version of this function...
     def create_obstacles(self):
 
-        ground = Obstacle(image = pygame.Surface([2000, 50]), x = 0, y = 600)
+        ground = Obstacle(image = pygame.Surface([1200, 50]), x = 0, y = 600)
 
-        obstacle2 = Obstacle(image = pygame.Surface([400, 25]), x = 500, y = 575)
+        ground2 = Obstacle(image = pygame.Surface([800, 50]), x = 1200, y = 700)
+
+        obstacle2 = Obstacle(image = pygame.Surface([300, 25]), x = 500, y = 575)
 
         obstacle3 = Obstacle(image = pygame.Surface([50, 400]), x = 0, y = 200)
 
-        obstacle4 = Obstacle(image = pygame.Surface([50, 400]), x = 1950, y = 200)
+        obstacle4 = Obstacle(image = pygame.Surface([50, 400]), x = 1950, y = 350)
 
-        obstacles = [ground, obstacle2, obstacle3, obstacle4]
+        obstacles = [ground, ground2, obstacle2, obstacle3, obstacle4]
         
         return obstacles
-
-
-    def change_obstacles_pos_cam(self):
-        for sprite in self.gameboard.obstacles: sprite.rect.x -= self.CameraX
 
 
     def check_game_result(self):
@@ -114,7 +102,6 @@ class Game(State):
 
 
     def display_frame(self, screen, background_image):
-        ######## add self.player, self.Camera to handle CameraX CameraY
         WHITE = (255, 255, 255)
         WHITE = (255, 255, 255)
         BLACK = (0, 0, 0)
@@ -122,7 +109,7 @@ class Game(State):
         font = pygame.font.SysFont('Arial', 40)
 
         # clean game area
-        screen.fill(WHITE, (0 - self.CameraX, 0, screen.get_size()[0], screen.get_size()[1]))
+        screen.fill(WHITE, (0 - self.camera.x, 0, screen.get_size()[0], screen.get_size()[1]))
 
         if not self.game_over:
 
@@ -135,13 +122,13 @@ class Game(State):
                 # self.level - 1 because drawing takes place in main after score was increased
                 won_level_text = ["Level " + str(self.level) + " beated!", "Press Y key to continue"]
                 for i, text in enumerate(won_level_text):
-                    draw_text(screen, text, font, BLACK, "L", 500 - self.CameraX, 300 + i * 50)
+                    draw_text(screen, text, font, BLACK, "L", 500 - self.camera.x, 300 + i * 50)
 
         # Game over screen
         else:
             game_over_text = ["You lost!", "Total score: {}".format(self.score.total_score),  "Do you want to continue? Y/N"]
             for i, text in enumerate(game_over_text):
-                draw_text(screen, text, font, BLACK, "L", 500 - self.CameraX, 300 + i * 50)
+                draw_text(screen, text, font, BLACK, "L", 500 - self.camera.x, 300 + i * 50)
 
             self.draw_main_game(screen, BLACK)
 
@@ -153,8 +140,17 @@ class Game(State):
         ## draw ground
         #self.draw_ground(screen, color)
 
+        # change position of player and obstacles due to camera movement
+        self.player.rect.x -= self.camera.x
+        self.player.rect.y -= self.camera.y
+
+        for obstacle in self.gameboard.obstacles: 
+            obstacle.rect.x -= self.camera.x
+            obstacle.rect.y -= self.camera.y
+
         # draw sprites (player and obstacles)
         draw_sprite(screen, self.player)
+
         for sprite in self.gameboard.obstacles:
             draw_sprite(screen, sprite) 
 
@@ -162,18 +158,8 @@ class Game(State):
         self.draw_game_results(screen, self.score, color)
 
         # update player image in new position
-        screen.blit(self.player.image, (self.player.rect.x - self.CameraX, self.player.rect.y))
-
-
-    ##def draw_keyword(self, screen, kw_list, color):
-    ##    font = pygame.font.SysFont('Arial', 45)
-    ##    a = 30; b = 0
-    ##    for word in kw_list:
-    ##        word = word + " "
-    ##        if len(word) > a: a = 30; b +=1
-    ##        for c in word:
-    ##            draw_text(screen, c, font, color, "L", (550 + (30-a)*35), (100 + b*60))
-    ##            a -= 1    
+        screen.blit(self.player.image, (self.player.rect.x, self.player.rect.y))
+  
 
     def draw_ground(self, screen, color):
         screen.fill(color, (0, 700, screen.get_size()[0], 20))
@@ -187,3 +173,5 @@ class Game(State):
         
         for n, result in enumerate(game_results_list):
             draw_text(screen, result, font, color, "R", screen.get_rect().width - 10, (10 + n*30))
+
+
