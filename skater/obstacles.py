@@ -30,7 +30,7 @@ class Obstacle(pygame.sprite.Sprite):
         """
         Checks if `self` is located over `other_rect`, regardless of the distance
         """
-        return self.rect.bottom <= other_rect.top and self.rect.top < other_rect.top \
+        return self.rect.top <= other_rect.bottom and self.rect.top < other_rect.top \
             and self.rect.left < other_rect.right and self.rect.right > other_rect.left
 
     def is_to_the_right(self, other_rect):
