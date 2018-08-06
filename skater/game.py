@@ -2,6 +2,7 @@ from .state import *
 from .player import *
 from .gameboard import *
 from .obstacles import *
+from .obstacles_list import *
 from .score import *
 from .camera import *
 from skater.destination import Destination
@@ -64,22 +65,12 @@ class Game(State):
         else:
             self.game_over_continue(event)
     
-    # this is still working/testing version of this function...
+    # return all obstacle objects listed in OBSTACLES in obstacles_list.py
     def create_obstacles(self):
 
-        ground = Obstacle(image = pygame.Surface([1200, 50]), x = 0, y = 600)
-
-        ground2 = Obstacle(image = pygame.Surface([800, 50]), x = 1200, y = 700)
-
-        obstacle2 = Obstacle(image = pygame.Surface([300, 25]), x = 500, y = 575)
-
-        obstacle3 = Obstacle(image = pygame.Surface([50, 400]), x = 0, y = 200)
-
-        obstacle4 = Obstacle(image = pygame.Surface([50, 400]), x = 1950, y = 350)
-
-        obstacles = [ground, ground2, obstacle2, obstacle3, obstacle4]
-        
-        return obstacles
+        return [Obstacle(image = pygame.Surface(obstacle[1]), \
+            x = obstacle[0][0], y = obstacle[0][1]) \
+            for obstacle in list(OBSTACLES.values())]
 
 
     def check_game_result(self):
