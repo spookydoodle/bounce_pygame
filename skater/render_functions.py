@@ -9,7 +9,11 @@ def draw_text(screen, text, font, color, side, side_px, top_px):
     screen.blit(text_screen, text_screen_rect)
 
 
-def draw_sprite(screen, sprite):
+def draw_sprite(screen, sprite, camera):
 
-    #sprite_rect = (sprite.rect.x - camera_x, sprite.rect.y - camera_y, sprite.rect.width, sprite.rect.height)
-    screen.blit(sprite.image, sprite.rect)
+    # draw sprite on screen dependent on camera position
+    sprite_rect = sprite.rect
+    sprite_rect.x -= camera.x
+    sprite_rect.y -= camera.y
+
+    screen.blit(sprite.image, sprite_rect)

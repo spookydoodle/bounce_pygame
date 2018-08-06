@@ -137,22 +137,11 @@ class Game(State):
     
     def draw_main_game(self, screen, color):
 
-        ## draw ground
-        #self.draw_ground(screen, color)
-
-        # change position of player and obstacles due to camera movement
-        self.player.rect.x -= self.camera.x
-        self.player.rect.y -= self.camera.y
-
-        for obstacle in self.gameboard.obstacles: 
-            obstacle.rect.x -= self.camera.x
-            obstacle.rect.y -= self.camera.y
-
         # draw sprites (player and obstacles)
-        draw_sprite(screen, self.player)
+        draw_sprite(screen, self.player, self.camera)
 
         for sprite in self.gameboard.obstacles:
-            draw_sprite(screen, sprite) 
+            draw_sprite(screen, sprite, self.camera) 
 
         # Draw scores in right top corner
         self.draw_game_results(screen, self.score, color)
