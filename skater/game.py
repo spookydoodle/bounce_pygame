@@ -100,7 +100,7 @@ class Game(State):
         font = pygame.font.SysFont('Arial', 40)
 
         # clean game area
-        screen.fill(WHITE, (0 - self.camera.x, 0, screen.get_size()[0], screen.get_size()[1]))
+        screen.fill(WHITE, (0, 0, screen.get_size()[0], screen.get_size()[1]))
 
         if not self.game_over:
 
@@ -113,13 +113,13 @@ class Game(State):
                 # self.level - 1 because drawing takes place in main after score was increased
                 won_level_text = ["Level " + str(self.level) + " beated!", "Press Y key to continue"]
                 for i, text in enumerate(won_level_text):
-                    draw_text(screen, text, font, BLACK, "L", 500 - self.camera.x, 300 + i * 50)
+                    draw_text(screen, text, font, BLACK, "L", 500, 300 + i * 50)
 
         # Game over screen
         else:
             game_over_text = ["You lost!", "Total score: {}".format(self.score.total_score),  "Do you want to continue? Y/N"]
             for i, text in enumerate(game_over_text):
-                draw_text(screen, text, font, BLACK, "L", 500 - self.camera.x, 300 + i * 50)
+                draw_text(screen, text, font, BLACK, "L", 500, 300 + i * 50)
 
             self.draw_main_game(screen, BLACK)
 
@@ -136,9 +136,6 @@ class Game(State):
 
         # Draw scores in right top corner
         self.draw_game_results(screen, self.score, color)
-
-        # update player image in new position
-        screen.blit(self.player.image, (self.player.rect.x, self.player.rect.y))
   
 
     def draw_ground(self, screen, color):
