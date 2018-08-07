@@ -53,8 +53,6 @@ class Game(State):
                 self.camera.adjust(screen, self.player)
 
                 self.player.move(screen, event, self.gameboard)
-                # The player cannot fall lower than the highest of obstacles under him
-                self.player.move_y(self.gameboard)
                 self.check_game_result()
 
             # You won level screen - press any key to move to next level
@@ -74,7 +72,7 @@ class Game(State):
 
 
     def check_game_result(self):
-        if self.player.is_crash:
+        if self.player.is_crashed():
             self.game_over = True
 
     

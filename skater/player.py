@@ -22,27 +22,18 @@ class Player(pygame.sprite.Sprite):
 
         self.image = pygame.image.load(images.PLAYER_MAIN).convert_alpha()
         self.rect = self.image.get_rect()
-        
-        # make collider smaller than the image
-        band = 4
-        # self.collide_rect = pygame.Rect(self.rect.x + band, self.rect.top, self.rect.width - 2*band, self.rect.height)
 
         # speed is used for movement to left/right
         self.speed = speed
 
         # acceleration, velocity, mass - used for acceleration and deceleration. 
         # separate velocities for movement on x axis (right/left) and y axis (jump)
-        self.a = 3
         self.v_x = self.v0 = speed * 1.8
         self.v_y = self.G * self.v0
         self.m = 4
-        self.is_jumping = False
-        self.is_falling = False
-        self.is_decelerating = False
 
         # flags used to perform tricks
         self.is_manual = False
-        self.is_crash = False
 
         # these parameters are used to stop the player after hitting  obstacle on horizontal axis (x)
         #self.is_colliding_r = False
@@ -55,6 +46,17 @@ class Player(pygame.sprite.Sprite):
         self.moving_direction_x = 0
         self.moving_direction_y = 1
 
+    def is_mid_air(self):
+        return self.v_y != 0
+
+    def is_jumping(self):
+        return self.v_y < 0
+
+    def is_falling(self):
+        return self.v_y > 0
+
+    def is_crashed(self):
+        return False  # TODO
 
     # function to load sprite images for each action/trick
     def load_image(self, path):
@@ -63,13 +65,13 @@ class Player(pygame.sprite.Sprite):
     # handle user input
     def move(self, screen, event, gameboard):
         
-        # set moving_direction_x parameter based on user input, except for when skater is in the air (is_jumping parameter)
+        # set moving_direction_x parameter based on user input, except for when skater is in the air
         keystate = pygame.key.get_pressed()
 
-        if not self.is_jumping:
+        if not self.is_mid_air():
 
             # here need to change to also use the dictionary CONTROLS - tbd later
-            if (keystate[K_RIGHT] or keystate[K_d]):# and self.rect.x < (screen.get_size()[0] - self.rect.width):
+            if (keystate[K_RIGHT] or keystate[K_d]):
                 self.moving_direction_x = 1
                 self.speed = self.v0
 
@@ -92,7 +94,6 @@ class Player(pygame.sprite.Sprite):
                 self.jump()
 
         elif event.type == pygame.KEYUP:
-            self.is_decelerating = True
             self.is_manual = False
 
 
@@ -102,7 +103,7 @@ class Player(pygame.sprite.Sprite):
     
     def call_movement_functions(self, gameboard):
         self.move_x(gameboard)
-        #self.check_crash()
+        self.move_y(gameboard)
         self.handle_images()
 
 
@@ -111,12 +112,9 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += self.speed * self.moving_direction_x
 
         # update the speed for the next iteration
-        if not self.is_jumping:
+        if not self.is_mid_air():
             # decrease velocity using drag parameter but only if on the ground
             self.speed *= self.DRAG
-
-            # decrease further if `is_decelerating` set explicitly
-            self. speed *= self.DRAG
 
         # if speed is below a threshold, set it to zero
         if self.speed <= self.ZERO:
@@ -155,37 +153,24 @@ class Player(pygame.sprite.Sprite):
 
 
     def jump(self):
-        self.is_jumping = True
         self.v_y = -self.v0  * 5 # NOTE: some random number
-    
-        
+
     def stop_movement_x(self, x):
         self.rect.x = x
-        self.is_decelerating = False
         self.moving_direction_x = 0
         self.v_x = 0
 
-    
     def stop_movement_y(self, y):
         self.rect.bottom = y
-        self.v_y = self.G * self.v0
-        self.v_x *= self.ELASTICITY
-        self.is_jumping = False
-        self.is_falling = False
-
-    
-    #def check_crash(self):
-    #    if self.moving_direction_x != 0 and(self.is_colliding_l or self.is_colliding_r):
-    #        self.is_crash = True
-
+        self.v_y = 0
 
     def handle_images(self):
 
-        if self.is_jumping or self.is_manual:
+        if self.is_mid_air() or self.is_manual:
            if self.moving_direction_x >= 0: img = images.PLAYER_MANUAL
            if self.moving_direction_x < 0: img = images.PLAYER_NOSE_MANUAL
 
-        elif self.is_crash: img = images.PLAYER_CRASH
+        elif self.is_crashed(): img = images.PLAYER_CRASH
 
         else: self.image = img = images.PLAYER_MAIN
         
