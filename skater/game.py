@@ -17,7 +17,7 @@ class Game(State):
 
         self.gameboard = GameBoard([])
 
-        self.player = Player(speed = 4)
+        self.player = Player(speed_unit = 8)
         self.player.rect.x = 100
         self.player.rect.bottom = 500
         

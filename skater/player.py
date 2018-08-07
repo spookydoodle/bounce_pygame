@@ -17,19 +17,21 @@ class Player(pygame.sprite.Sprite):
     # elasticity parameter used to decrease velocity when hitting the ground
     ELASTICITY = 0.8
 
-    def __init__(self, speed = 0):
+    # how high the player can jump
+    LEAP_FORCE = 5
+
+    def __init__(self, speed_unit=1):
         super().__init__()
+
+        self.speed_unit = speed_unit
 
         self.image = pygame.image.load(images.PLAYER_MAIN).convert_alpha()
         self.rect = self.image.get_rect()
 
-        # speed is used for movement to left/right
-        self.speed = speed
-
         # acceleration, velocity, mass - used for acceleration and deceleration. 
         # separate velocities for movement on x axis (right/left) and y axis (jump)
-        self.v_x = self.v0 = speed * 1.8
-        self.v_y = self.G * self.v0
+        self.v_x = 0
+        self.v_y = 0
         self.m = 4
 
         # flags used to perform tricks
@@ -40,11 +42,6 @@ class Player(pygame.sprite.Sprite):
         #self.is_colliding_l = False
         self.is_colliding_t = False
         self.is_colliding_b = False
-
-                # these parameters are used to determine direction for accelerating/decelerating when user stops skating; 
-        # 1 = right/up, -1 = left/down, 0 = no movement
-        self.moving_direction_x = 0
-        self.moving_direction_y = 1
 
     def is_mid_air(self):
         return self.v_y != 0
@@ -58,6 +55,12 @@ class Player(pygame.sprite.Sprite):
     def is_crashed(self):
         return False  # TODO
 
+    def is_moving_right(self):
+        return self.v_x > 0
+
+    def is_moving_left(self):
+        return self.v_x < 0
+
     # function to load sprite images for each action/trick
     def load_image(self, path):
         self.image = pygame.image.load(path).convert_alpha()
@@ -65,19 +68,16 @@ class Player(pygame.sprite.Sprite):
     # handle user input
     def move(self, screen, event, gameboard):
         
-        # set moving_direction_x parameter based on user input, except for when skater is in the air
         keystate = pygame.key.get_pressed()
 
         if not self.is_mid_air():
 
             # here need to change to also use the dictionary CONTROLS - tbd later
             if (keystate[K_RIGHT] or keystate[K_d]):
-                self.moving_direction_x = 1
-                self.speed = self.v0
+                self.v_x = self.speed_unit
 
             if (keystate[K_LEFT] or keystate[K_a]) and self.rect.x > 0: 
-                self.moving_direction_x = -1
-                self.speed = self.v0
+                self.v_x = - self.speed_unit
 
 
         # set flags for tricks based on user input
@@ -109,27 +109,27 @@ class Player(pygame.sprite.Sprite):
 
     def move_x(self, gameboard):
         # update the position according to previously computed speed
-        self.rect.x += self.speed * self.moving_direction_x
+        self.rect.x += self.v_x
 
         # update the speed for the next iteration
         if not self.is_mid_air():
             # decrease velocity using drag parameter but only if on the ground
-            self.speed *= self.DRAG
+            self.v_x *= self.DRAG
 
         # if speed is below a threshold, set it to zero
-        if self.speed <= self.ZERO:
-            self.speed = 0
+        if abs(self.v_x) <= self.ZERO:
+            self.v_x = 0
 
         # find x position of the closest obstacle edges on the right and left side of the player
         limit_right = min(obstacle.rect.left for obstacle in gameboard.obstacles_right(self))
         limit_left = max(obstacle.rect.right for obstacle in gameboard.obstacles_left(self))
         
         # stop movement if collision on the right of the player takes place
-        if self.moving_direction_x > 0 and self.rect.right > limit_right:
+        if self.is_moving_right() and self.rect.right > limit_right:
             self.stop_movement_x(limit_right - self.rect.width)
         
         # stop movement if collision on the left of the player takes place
-        if self.moving_direction_x < 0 and self.rect.left < limit_left:
+        if self.is_moving_left() and self.rect.left < limit_left:
             self.stop_movement_x(limit_left)
             
 
@@ -153,11 +153,10 @@ class Player(pygame.sprite.Sprite):
 
 
     def jump(self):
-        self.v_y = -self.v0  * 5 # NOTE: some random number
+        self.v_y = -self.speed_unit  * self.LEAP_FORCE
 
     def stop_movement_x(self, x):
         self.rect.x = x
-        self.moving_direction_x = 0
         self.v_x = 0
 
     def stop_movement_y(self, y):
@@ -167,8 +166,10 @@ class Player(pygame.sprite.Sprite):
     def handle_images(self):
 
         if self.is_mid_air() or self.is_manual:
-           if self.moving_direction_x >= 0: img = images.PLAYER_MANUAL
-           if self.moving_direction_x < 0: img = images.PLAYER_NOSE_MANUAL
+            if self.is_moving_left():
+                img = images.PLAYER_NOSE_MANUAL
+            else:
+                img = images.PLAYER_MANUAL
 
         elif self.is_crashed(): img = images.PLAYER_CRASH
 
