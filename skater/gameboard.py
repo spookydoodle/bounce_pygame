@@ -1,13 +1,11 @@
 
 class GameBoard:
+    # infinities to avoid crashes on empty sequence computations
+    MIN_POSITION = -2 ** 31
+    MAX_POSITION = 2 ** 31
 
     def __init__(self, obstacles):
         self.obstacles = obstacles
-
-
-    #def change_obstacles_pos_cam(self):
-    #    for obstacle in self.obstacles: obstacle.rect.x -= self.CameraX
-
 
     def obstacles_under(self, player):
         """
@@ -40,3 +38,24 @@ class GameBoard:
             for obstacle in self.obstacles
             if obstacle.is_to_the_left(player.rect)]  # see `obstacles_right`
         return ans
+
+    def limit_under(self, player):
+        limits = [
+            obstacle.rect.top
+            for obstacle in self.obstacles_under(player)]
+        
+        return min(limits + [self.MAX_POSITION])
+
+    def limit_right(self, player):
+        limits = [
+            obstacle.rect.left
+            for obstacle in self.obstacles_right(player)]
+
+        return min(limits + [self.MAX_POSITION])
+
+    def limit_left(self, player):
+        limits = [
+            obstacle.rect.right
+            for obstacle in self.obstacles_left(player)]
+
+        return max(limits + [self.MIN_POSITION])
