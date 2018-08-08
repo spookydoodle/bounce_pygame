@@ -108,6 +108,11 @@ class Player(pygame.sprite.Sprite):
 
 
     def move_x(self, gameboard):
+        # find x position of the closest obstacle edges on the right and left side of the player
+        # NOTE: this has to be computed *before* modifying self.rect.x
+        limit_right = gameboard.limit_right(self)
+        limit_left = gameboard.limit_left(self)
+
         # update the position according to previously computed speed
         self.rect.x += self.v_x
 
@@ -119,10 +124,6 @@ class Player(pygame.sprite.Sprite):
         # if speed is below a threshold, set it to zero
         if abs(self.v_x) <= self.ZERO:
             self.v_x = 0
-
-        # find x position of the closest obstacle edges on the right and left side of the player
-        limit_right = gameboard.limit_right(self)
-        limit_left = gameboard.limit_left(self)
         
         # stop movement if collision on the right of the player takes place
         if self.is_moving_right() and self.rect.right > limit_right:
@@ -134,6 +135,9 @@ class Player(pygame.sprite.Sprite):
             
 
     def move_y(self, gameboard):
+        # NOTE: this has to be computed *before* modifying self.rect.y
+        floor = gameboard.limit_under(self)
+
         if not self.is_colliding_b:
             # Calculate y-acceleration (gravity pull)
             a = self.m * self.G
@@ -144,8 +148,6 @@ class Player(pygame.sprite.Sprite):
             # Update y-position
             self.rect.y += self.v_y
             
-            floor = gameboard.limit_under(self)
-
             floor_hit = self.rect.bottom > floor
             if floor_hit:
                 self.stop_movement_y(floor)
