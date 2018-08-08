@@ -11,9 +11,5 @@ def draw_text(screen, text, font, color, side, side_px, top_px):
 
 def draw_sprite(screen, sprite, camera):
 
-    # draw sprite on screen dependent on camera position
-    sprite_rect = sprite.rect
-    sprite_rect.x -= camera.x
-    sprite_rect.y -= camera.y
-
-    screen.blit(sprite.image, sprite_rect)
+    rendering_position = (sprite.rect.x - camera.x, sprite.rect.y - camera.y)
+    screen.blit(sprite.image, rendering_position)

@@ -1,64 +1,60 @@
 
 class Camera:
+    LAG = 0.01
 
     def __init__(self):
         self.x = 0
-        self.y = 0
-        
+        self.y = 0        
 
     def adjust(self, screen, player):
-        
-        LAG = 0.99
-
-        self.adjust_x(screen, player, LAG)
-        self.adjust_y(screen, player, LAG)
+        self.adjust_x(screen.get_rect(), player.rect)
+        self.adjust_y(screen.get_rect(), player.rect)
 
 
-    def adjust_x(self, screen, player, lag):
+    def adjust_x(self, screen_rect, player_rect):
         """
-        Changes camera x parameteres depending on the location of the player on screen x axis
+        Computes the required camera adjustment depending on player's location and camera's current x shift
         """
-        MARGIN_LEFT = 0.2
-        MARGIN_RIGHT = 0.5
+        margin_left = 0.2
+        margin_right = 0.3
 
         # point when camera should move down / up dependent on player's vertical position on the screen
-        cam_thresh_left = screen.get_rect().x + MARGIN_LEFT * screen.get_rect().width
-        cam_thresh_right = screen.get_rect().x + MARGIN_RIGHT * screen.get_rect().width
+        cam_thresh_left = margin_left * screen_rect.width
+        cam_thresh_right = margin_right * screen_rect.width
 
-        if player.rect.x < cam_thresh_left:
+        # compute camera / player coordinates on the screen
+        player_position = player_rect.x + player_rect.width / 2
+        camera_focus = self.x + screen_rect.width / 2
 
-            ##### hey rwa: with this commented code below the game looks a lot less smooth 
-            ##### and distances between obstacles are not correct.
+        relative_player_position = player_position - camera_focus
 
-            #self.x -= abs(player.rect.x - cam_thresh_left) * lag
-            self.x -= 1
-            
-        elif player.rect.x > cam_thresh_right:
-            #self.x += abs(player.rect.x - cam_thresh_right) * lag
-            self.x += 1
+        if relative_player_position > cam_thresh_right or relative_player_position < -1 * cam_thresh_left:
+            # player is outside of camera's focus -> move camera
+            self.x += relative_player_position * self.LAG
 
-        else: 
-            self.x = 0
+        else:
+            # player is within camera's focus -> do nothing
+            pass
 
+    def adjust_y(self, screen_rect, player_rect):
+            """
+            see `adjust_x`
+            """
+            margin_top = 0.3
+            margin_bottom = 0.5
 
-    def adjust_y(self, screen, player, lag):
-        """
-        Changes camera y parameteres depending on the location of the player on screen y axis
-        """
-        MARGIN_TOP = 0.3
-        MARGIN_BOTTOM = 0.6
+            cam_thresh_top = margin_top * screen_rect.height
+            cam_thresh_bottom = margin_bottom * screen_rect.height
 
-        # point when camera should move down / up dependent on player's vertical position on the screen
-        cam_thresh_up = screen.get_rect().y + MARGIN_TOP * screen.get_rect().height
-        cam_thresh_down = screen.get_rect().y + MARGIN_BOTTOM * screen.get_rect().height
+            player_position = player_rect.y + player_rect.height / 2
+            camera_focus = self.y + screen_rect.height / 2
 
-        if player.rect.y < cam_thresh_up:
-            #self.y -= abs(player.rect.y - cam_thresh_up) * lag
-            self.y -= 1
+            relative_player_position = player_position - camera_focus
 
-        elif player.rect.y > cam_thresh_down:
-            #self.y += abs(player.rect.y - cam_thresh_down)
-            self.y += 1
+            if relative_player_position < -1 * cam_thresh_bottom or relative_player_position > cam_thresh_top:
+                # player is outside of camera's focus -> move camera
+                self.y += relative_player_position * self.LAG
 
-        else: 
-            self.y = 0
+            else:
+                # player is within camera's focus -> do nothing
+                pass

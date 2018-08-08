@@ -25,7 +25,7 @@ class Player(pygame.sprite.Sprite):
         
         # make collider smaller than the image
         band = 4
-        self.collide_rect = pygame.Rect(self.rect.x + band, self.rect.top, self.rect.width - 2*band, self.rect.height)
+        # self.collide_rect = pygame.Rect(self.rect.x + band, self.rect.top, self.rect.width - 2*band, self.rect.height)
 
         # speed is used for movement to left/right
         self.speed = speed
@@ -69,7 +69,7 @@ class Player(pygame.sprite.Sprite):
         if not self.is_jumping:
 
             # here need to change to also use the dictionary CONTROLS - tbd later
-            if (keystate[K_RIGHT] or keystate[K_d]) and self.rect.x < (screen.get_size()[0] - self.rect.width):
+            if (keystate[K_RIGHT] or keystate[K_d]):# and self.rect.x < (screen.get_size()[0] - self.rect.width):
                 self.moving_direction_x = 1
                 self.speed = self.v0
 
@@ -125,8 +125,7 @@ class Player(pygame.sprite.Sprite):
         # find x position of the closest obstacle edges on the right and left side of the player
         limit_right = min(obstacle.rect.left for obstacle in gameboard.obstacles_right(self))
         limit_left = max(obstacle.rect.right for obstacle in gameboard.obstacles_left(self))
-
-
+        
         # stop movement if collision on the right of the player takes place
         if self.moving_direction_x > 0 and self.rect.right > limit_right:
             self.stop_movement_x(limit_right - self.rect.width)
