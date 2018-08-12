@@ -2,7 +2,7 @@ import pygame
 from unittest import TestCase
 
 from skater.obstacles import Obstacle
-from skater import images
+from skater import image, image_paths
 
 from .mock_rect import shifted, makeMockRect
 
@@ -20,8 +20,8 @@ class TestObstacle(TestCase):
         """
         size = width, height = (1280, 720)
         screen = pygame.display.set_mode(size)  # FIXME: decouple Obstacle from pygame.display
-        image = images.PLAYER_MAIN  # some image is needed to construct an Obstacle
-        self.obstacle = Obstacle(image)
+        img = image.Image.load(image_paths.PLAYER_MAIN)  # some image is needed to construct an Obstacle
+        self.obstacle = Obstacle(img)
         self.base_rect = makeMockRect(self.obstacle.rect)
 
         # Overlapping rectangles

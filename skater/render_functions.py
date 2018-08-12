@@ -12,4 +12,4 @@ def draw_text(screen, text, font, color, side, side_px, top_px):
 def draw_sprite(screen, sprite, camera):
 
     rendering_position = (sprite.rect.x - camera.x, sprite.rect.y - camera.y)
-    screen.blit(sprite.image, rendering_position)
+    screen.blit(sprite.image.raw_image, rendering_position)

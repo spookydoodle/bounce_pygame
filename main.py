@@ -8,19 +8,16 @@ from skater.controls import *
 from skater.exit import Exit
 from skater.router import Router
 from skater.destination import Destination
-from skater import images
+from skater import image, image_paths
 
-
-# Set fonts for drawing 
-pygame.init()
-pygame.font.init() 
+size = width, height = (1280, 720)
 
 # Set game window frame, background amd fonts for printing
-background_image = pygame.image.load(images.BACKGROUND)
-##size = width, height = background_image.get_rect().width, background_image.get_rect().height
-size = width, height = (1280, 720)
+pygame.init()
+pygame.font.init()
 screen = pygame.display.set_mode(size)
-##screen.blit(background_image, (0, 0))
+
+background_image = image.Image.load(image_paths.BACKGROUND)
 
 done = False
 clock = pygame.time.Clock()
