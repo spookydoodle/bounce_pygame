@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
     # elasticity parameter used to decrease velocity when hitting the ground
     ELASTICITY = 0.8
 
-    # how high the player can jump
+    # factor used to calculate max jump height, used to multiply player's speed unit
     LEAP_FORCE = 5
 
     def __init__(self, speed_unit=1):
@@ -37,11 +37,6 @@ class Player(pygame.sprite.Sprite):
         # flags used to perform tricks
         self.is_manual = False
 
-        # these parameters are used to stop the player after hitting  obstacle on horizontal axis (x)
-        #self.is_colliding_r = False
-        #self.is_colliding_l = False
-        self.is_colliding_t = False
-        self.is_colliding_b = False
 
     def is_mid_air(self):
         return self.v_y != 0
@@ -102,6 +97,7 @@ class Player(pygame.sprite.Sprite):
 
     
     def call_movement_functions(self, gameboard):
+        
         self.move_x(gameboard)
         self.move_y(gameboard)
         self.handle_images()
@@ -138,23 +134,22 @@ class Player(pygame.sprite.Sprite):
         # NOTE: this has to be computed *before* modifying self.rect.y
         floor = gameboard.limit_under(self)
 
-        if not self.is_colliding_b:
-            # Calculate y-acceleration (gravity pull)
-            a = self.m * self.G
+        # Calculate y-acceleration (gravity pull)
+        a = self.m * self.G
 
-            # Update y-speed with new acceleration
-            self.v_y += a
+        # Update y-speed with new acceleration
+        self.v_y += a
 
-            # Update y-position
-            self.rect.y += self.v_y
+        # Update y-position
+        self.rect.y += self.v_y
             
-            floor_hit = self.rect.bottom > floor
-            if floor_hit:
-                self.stop_movement_y(floor)
+        floor_hit = self.rect.bottom > floor
+        if floor_hit:
+            self.stop_movement_y(floor)
 
 
     def jump(self):
-        self.v_y = -self.speed_unit  * self.LEAP_FORCE
+        self.v_y = -self.speed_unit * self.LEAP_FORCE
 
     def stop_movement_x(self, x):
         self.rect.x = x
