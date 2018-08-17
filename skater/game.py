@@ -6,7 +6,7 @@ from .obstacles_list import *
 from .score import *
 from .camera import *
 from skater.destination import Destination
-
+from . import image, image_paths
 
 class Game(State):
 
@@ -65,9 +65,11 @@ class Game(State):
     
     # return all obstacle objects listed in OBSTACLES in obstacles_list.py
     def create_obstacles(self):
-
-        return [Obstacle(image = pygame.Surface(obstacle[1]), \
-            x = obstacle[0][0], y = obstacle[0][1]) \
+        return [
+            Obstacle(
+                image = image.Image.create(obstacle[1]),
+                x = obstacle[0][0],
+                y = obstacle[0][1])
             for obstacle in list(OBSTACLES.values())]
 
 

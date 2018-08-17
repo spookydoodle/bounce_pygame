@@ -54,7 +54,7 @@ class Menu(State):
         selected_marker = ">"; unselected_marker = " "
 
         # clean game area
-        screen.blit(background_image, (0, 0))
+        screen.blit(background_image.raw_image, (0, 0))
 
         for i in range(len(self.OPTIONS)):
             if i == self.selected_index: text = "{} {}".format(selected_marker, self.OPTIONS[i])

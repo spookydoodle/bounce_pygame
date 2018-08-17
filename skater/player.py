@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import *
 from .dicts import *
 
-from skater import images
+from . import image, image_paths
 
 
 class Player(pygame.sprite.Sprite):
@@ -25,8 +25,8 @@ class Player(pygame.sprite.Sprite):
 
         self.speed_unit = speed_unit
 
-        self.image = pygame.image.load(images.PLAYER_MAIN).convert_alpha()
-        self.rect = self.image.get_rect()
+        self.image = image.Image.load(image_paths.PLAYER_MAIN)
+        self.rect = self.image.shape
 
         # acceleration, velocity, mass - used for acceleration and deceleration. 
         # separate velocities for movement on x axis (right/left) and y axis (jump)
@@ -55,10 +55,6 @@ class Player(pygame.sprite.Sprite):
 
     def is_moving_left(self):
         return self.v_x < 0
-
-    # function to load sprite images for each action/trick
-    def load_image(self, path):
-        self.image = pygame.image.load(path).convert_alpha()
 
     # handle user input
     def move(self, screen, event, gameboard):
@@ -163,12 +159,14 @@ class Player(pygame.sprite.Sprite):
 
         if self.is_mid_air() or self.is_manual:
             if self.is_moving_left():
-                img = images.PLAYER_NOSE_MANUAL
+                img = image_paths.PLAYER_NOSE_MANUAL
             else:
-                img = images.PLAYER_MANUAL
+                img = image_paths.PLAYER_MANUAL
 
-        elif self.is_crashed(): img = images.PLAYER_CRASH
+        elif self.is_crashed():
+            img = image_paths.PLAYER_CRASH
 
-        else: self.image = img = images.PLAYER_MAIN
+        else:
+            img = image_paths.PLAYER_MAIN
         
-        self.image = pygame.image.load(img).convert_alpha()
+        self.image = image.Image.load(img)
