@@ -9,7 +9,15 @@ def draw_text(screen, text, font, color, side, side_px, top_px):
     screen.blit(text_screen, text_screen_rect)
 
 
-def draw_sprite(screen, sprite, camera):
+def draw_rect(screen, camera, rect, image = None):
 
-    rendering_position = (sprite.rect.x - camera.x, sprite.rect.y - camera.y)
-    screen.blit(sprite.image.raw_image, rendering_position)
+    rendering_position = (rect.x - camera.x, rect.y - camera.y)
+    screen.blit(image.raw_image, rendering_position)
+
+
+def draw_line(screen, camera, start_pos, end_pos, color):
+
+    start_rendering_position = (start_pos.x - camera.x, start_pos.y - camera.y)
+    end_rendering_position = (start_pos.x - camera.x, start_pos.y - camera.y)
+
+    pygame.draw.line(screen, color, start_rendering_position, end_rendering_position, width=1)

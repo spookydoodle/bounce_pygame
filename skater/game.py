@@ -67,10 +67,10 @@ class Game(State):
     def create_obstacles(self):
         return [
             Obstacle(
-                image = image.Image.create(obstacle[1]),
-                x = obstacle[0][0],
-                y = obstacle[0][1])
-            for obstacle in list(OBSTACLES.values())]
+                image = image.Image.create( (obstacle['size']['width'], obstacle['size']['height']) ),
+                x = obstacle['position']['x'],
+                y = obstacle['position']['y'])
+            for obstacle in list(OBSTACLES.values()) if obstacle['type'] == 1]  
 
 
     def check_game_result(self):
@@ -129,10 +129,10 @@ class Game(State):
     def draw_main_game(self, screen, color):
 
         # draw sprites (player and obstacles)
-        draw_sprite(screen, self.player, self.camera)
+        draw_rect(screen, self.camera, self.player.rect, self.player.image)
 
         for sprite in self.gameboard.obstacles:
-            draw_sprite(screen, sprite, self.camera) 
+            draw_rect(screen, self.camera, sprite.rect, sprite.image) 
 
         # Draw scores in right top corner
         self.draw_game_results(screen, self.score, color)
