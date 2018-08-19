@@ -2,15 +2,15 @@ import os
 import string
 import pygame
 from pygame.locals import *
-from skater.game import *
-from skater.menu import *
-from skater.controls import *
-from skater.exit import Exit
-from skater.router import Router
-from skater.destination import Destination
-from skater import image, image_paths
+from bounce.game import *
+from bounce.menu import *
+from bounce.controls import *
+from bounce.exit import Exit
+from bounce.router import Router
+from bounce.destination import Destination
+from bounce import image, image_paths
 
-size = width, height = (1280, 720)
+size = width, height = (600, 800)
 
 # Set game window frame, background amd fonts for printing
 pygame.init()
