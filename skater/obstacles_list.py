@@ -6,35 +6,59 @@
 
 OBSTACLES = {
 
+    'W_01' : {
+        'type' : 1,
+        'position': {'x': -25, 'y': 300}, 
+        'size': {'width': 50, 'height': 600}
+        },
+
     'P_01' : {
         'type' : 1,
         'position': {'x': 0, 'y': 600}, 
-        'size': {'width': 1200, 'height': 50}
+        'size': {'width': 300, 'height': 50}
         },
 
     'P_02' : {
         'type' : 1,
-        'position': {'x': 1200, 'y': 700}, 
-        'size': {'width': 800, 'height': 50}
+        'position': {'x': 800, 'y': 600}, 
+        'size': {'width': 400, 'height': 50}
         },
 
     'P_03' : {
         'type' : 1,
-        'position': {'x': 500, 'y': 575}, 
-        'size': {'width': 300, 'height': 25}
+        'position': {'x': 0, 'y': 650}, 
+        'size': {'width': 1250, 'height': 50}
         },
 
     'P_04' : {
         'type' : 1,
-        'position': {'x': 0, 'y': 200}, 
-        'size': {'width': 50, 'height': 400}
+        'position': {'x': 0, 'y': 700}, 
+        'size': {'width': 1300, 'height': 50}
         },
 
-    #'P_05' : {
-    #    'type' : 1,
-    #    'position': {'x': 1950, 'y': 350}, 
-    #    'size': {'width': 50, 'height': 400}
-    #    },
+    'P_05' : {
+        'type' : 1,
+        'position': {'x': 0, 'y': 750}, 
+        'size': {'width': 1350, 'height': 50}
+        },
+
+    'P_06' : {
+        'type' : 1,
+        'position': {'x': 0, 'y': 800}, 
+        'size': {'width': 1400, 'height': 50}
+        },
+
+    'P_07' : {
+        'type' : 1,
+        'position': {'x': 0, 'y': 850}, 
+        'size': {'width': 2000, 'height': 50}
+        },
+
+    'W_02' : {
+        'type' : 1,
+        'position': {'x': 1975, 'y': 300}, 
+        'size': {'width': 50, 'height': 600}
+        },
 
     'L_01' : {
         'type' : 2,
