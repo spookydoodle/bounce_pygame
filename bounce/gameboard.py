@@ -59,3 +59,10 @@ class GameBoard:
             for obstacle in self.obstacles_left(player)]
 
         return max(limits + [self.MIN_POSITION])
+
+    # returns true if there are no obstacles on the right/left to the player
+    def is_no_right_limit(self, player):
+        return self.limit_right(player) == self.MAX_POSITION
+
+    def is_no_left_limit(self, player):
+        return self.limit_left(player) == self.MIN_POSITION

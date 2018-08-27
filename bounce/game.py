@@ -20,7 +20,7 @@ class Game(State):
 
         self.player = Player(speed_unit = 8)
         self.player.rect.x = 200
-        self.player.rect.bottom = 500
+        self.player.rect.bottom = -100
         
         self.score = Score(3)
 
@@ -44,7 +44,7 @@ class Game(State):
             self.level += 1
             self.gameboard.obstacles = self.create_init_obstacles()
             self.player.rect.x = 200
-            self.player.rect.bottom = 500
+            self.player.rect.bottom = -100
             self.new_level = False
 
         if not self.game_over:
@@ -89,7 +89,7 @@ class Game(State):
 
         for x_pos in x_positions:
 
-            height = random.randint(50, 400)
+            height = random.randint(100, 400)
             distance = random.randint(10, 150)
 
             self.gameboard.obstacles.append( Obstacle(

@@ -34,8 +34,8 @@ class Player(pygame.sprite.Sprite):
         self.v_y = 0
         self.m = 4
 
-        # flags used to perform tricks
-        self.is_manual = False
+        # initial direction - to the left
+        self.direction = 'L'
 
 
     def is_mid_air(self):
@@ -50,51 +50,43 @@ class Player(pygame.sprite.Sprite):
     def is_crashed(self):
         return False  # TODO
 
+    def is_mid_x(self):
+        return self.is_moving_left() or self.is_moving_right()
+
     def is_moving_right(self):
         return self.v_x > 0
 
     def is_moving_left(self):
         return self.v_x < 0
 
+
     # handle user input
     def move(self, screen, event, gameboard):
         
         keystate = pygame.key.get_pressed()
 
-        if not self.is_mid_air():
+        if not self.is_mid_x():
 
             ## here need to change to also use the dictionary CONTROLS - tbd later
             #if (keystate[K_RIGHT] or keystate[K_d]):
 
             if event.type == pygame.KEYDOWN:
-            #if event.key in [CONTROLS["G_RIGHT"], CONTROLS["G_LEFT"]]:
-            #    self.stop_movement_x()
 
                 if event.key in CONTROLS["G_RIGHT"]:
+                    self.direction = 'R'
                     self.v_x = self.speed_unit
 
                 if event.key in CONTROLS["G_LEFT"]:
+                    self.direction = 'L'
                     self.v_x = - self.speed_unit
 
-            #if (keystate[K_LEFT] or keystate[K_a]) and self.rect.x > 0: 
-            #    self.v_x = - self.speed_unit
 
+            # fall to the right/left if obstacle's end is reached
+            if self.direction == 'R' and gameboard.is_no_right_limit(self):
+                self.v_x = self.speed_unit
 
-        ## set flags for tricks based on user input
-        #if keystate[K_UP]: self.is_manual = True
-        #else: self.is_manual = False
-
-
-        # set flags for jumping based on user input and for deceleration if user stops pressing movement buttons
-        if event.type == pygame.KEYDOWN:
-            #if event.key in [CONTROLS["G_RIGHT"], CONTROLS["G_LEFT"]]:
-            #    self.stop_movement_x()
-
-            if event.key in CONTROLS["G_OLLIE"]:
-                self.jump()
-
-        elif event.type == pygame.KEYUP:
-            self.is_manual = False
+            if self.direction == 'L' and gameboard.is_no_left_limit(self):
+                self.v_x = - self.speed_unit
 
 
         # call movement functions after handling user input
@@ -116,24 +108,21 @@ class Player(pygame.sprite.Sprite):
 
         # update the position according to previously computed speed
         self.rect.x += self.v_x
-
-        ## update the speed for the next iteration
-        #if not self.is_mid_air():
-        #    # decrease velocity using drag parameter but only if on the ground
-        #    self.v_x *= self.DRAG
-
-        # if speed is below a threshold, set it to zero
-        if abs(self.v_x) <= self.ZERO:
-            self.v_x = 0
         
-        # stop movement if collision on the right of the player takes place
-        if self.is_moving_right() and self.rect.right > limit_right:
-            self.stop_movement_x(limit_right - self.rect.width)
-        
-        # stop movement if collision on the left of the player takes place
-        if self.is_moving_left() and self.rect.left < limit_left:
-            self.stop_movement_x(limit_left)
+        # stop movement if collision on the right/left of the player takes place
+        self.check_stop_movement_right(limit_right)
+        self.check_stop_movement_left(limit_left)
             
+    
+    def check_stop_movement_right(self, limit):
+        if self.is_moving_right() and self.rect.right > limit:
+            self.stop_movement_x(limit - self.rect.width)
+
+
+    def check_stop_movement_left(self, limit):
+        if self.is_moving_left() and self.rect.left < limit:
+            self.stop_movement_x(limit)
+
 
     def move_y(self, gameboard):
         ## NOTE: this has to be computed *before* modifying self.rect.y
@@ -168,7 +157,7 @@ class Player(pygame.sprite.Sprite):
 
     def handle_images(self):
 
-        if self.is_mid_air() or self.is_manual:
+        if self.is_mid_air():
             if self.is_moving_left():
                 img = image_paths.PLAYER_NOSE_MANUAL
             else:
