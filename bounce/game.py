@@ -5,7 +5,7 @@ from .obstacles import *
 from .obstacles_list import *
 from .score import *
 from .camera import *
-from bounce.destination import Destination
+from .destination import Destination
 from . import image, image_paths
 import random
 
@@ -13,7 +13,7 @@ class Game(State):
 
     def __init__(self):
         State.__init__(self)
-        self.active_state = "game"
+        self.active_state = "Play"
         self.level = 0
 
         self.gameboard = GameBoard([])
@@ -24,7 +24,6 @@ class Game(State):
         
         self.score = Score(3)
 
-        self.game_over = False
         self.won_level = False
         self.new_level = True
 
@@ -32,7 +31,7 @@ class Game(State):
 
 
     def next_destination(self):
-        if self.active_state == "Menu": return Desination.MENU
+        if self.active_state == "Menu": return Destination.MENU
         elif self.active_state == "Exit": return Destination.EXIT
 
     
@@ -47,7 +46,7 @@ class Game(State):
             self.player.rect.bottom = -100
             self.new_level = False
 
-        if not self.game_over:
+        if not self.is_game_over():
             if not self.won_level:
 
                 # append new obstacles and delete invisible ones depending on player.y position
@@ -57,7 +56,7 @@ class Game(State):
                 self.camera.adjust(screen, self.player)
 
                 self.player.move(screen, event, self.gameboard)
-                self.check_game_result()
+                #self.check_game_result()
 
             # You won level screen - press any key to move to next level
             else: 
@@ -112,9 +111,8 @@ class Game(State):
             self.remove_obstacle()
 
 
-    def check_game_result(self):
-        if self.player.is_crashed():
-            self.game_over = True
+    def is_game_over(self):
+        return self.player.is_crashed()
 
     
     def game_over_continue(self, event):
@@ -141,7 +139,7 @@ class Game(State):
         # clean game area
         screen.fill(WHITE, (0, 0, screen.get_size()[0], screen.get_size()[1]))
 
-        if not self.game_over:
+        if not self.is_game_over():
 
             # main game
             if not self.won_level:
@@ -158,7 +156,7 @@ class Game(State):
         else:
             game_over_text = ["You lost!", "Total score: {}".format(self.score.total_score),  "Do you want to continue? Y/N"]
             for i, text in enumerate(game_over_text):
-                draw_text(screen, text, font, BLACK, "L", 500, 300 + i * 50)
+                draw_text(screen, text, font, BLACK, "L", 100, 300 + i * 50)
 
             self.draw_main_game(screen, BLACK)
 

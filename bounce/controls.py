@@ -54,7 +54,8 @@ class Controls(State):
         selected_marker = ">"; unselected_marker = " "
 
         # clean game area
-        screen.blit(background_image.raw_image, (0, 0))
+        #screen.blit(background_image.raw_image, (0, 0))
+        screen.fill(WHITE, (0, 0, screen.get_size()[0], screen.get_size()[1]))
 
         
         for j in range(len(self.CONTROLS_DESC[0])):

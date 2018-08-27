@@ -48,7 +48,7 @@ class Player(pygame.sprite.Sprite):
         return self.v_y > 0
 
     def is_crashed(self):
-        return False  # TODO
+        return (self.rect.left < 50 or self.rect.right > 600)
 
     def is_mid_x(self):
         return self.is_moving_left() or self.is_moving_right()
