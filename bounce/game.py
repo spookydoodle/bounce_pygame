@@ -7,6 +7,7 @@ from .score import *
 from .camera import *
 from bounce.destination import Destination
 from . import image, image_paths
+import random
 
 class Game(State):
 
@@ -18,7 +19,7 @@ class Game(State):
         self.gameboard = GameBoard([])
 
         self.player = Player(speed_unit = 8)
-        self.player.rect.x = 100
+        self.player.rect.x = 200
         self.player.rect.bottom = 500
         
         self.score = Score(3)
@@ -41,14 +42,17 @@ class Game(State):
         
         if self.new_level:
             self.level += 1
-            self.gameboard.obstacles = self.create_obstacles()
-            self.player.rect.x = 100
+            self.gameboard.obstacles = self.create_init_obstacles()
+            self.player.rect.x = 200
             self.player.rect.bottom = 500
             self.new_level = False
 
         if not self.game_over:
             if not self.won_level:
 
+                # append new obstacles and delete invisible ones depending on player.y position
+                self.edit_obstacles_list(screen)
+                
                 # changes x and y parameters of camera depending on the location of the player on the screen
                 self.camera.adjust(screen, self.player)
 
@@ -64,7 +68,7 @@ class Game(State):
             self.game_over_continue(event)
     
     # return all obstacle objects listed in OBSTACLES in obstacles_list.py
-    def create_obstacles(self):
+    def create_init_obstacles(self):
         return [
             Obstacle(
                 image = image.Image.create( (obstacle['size']['width'], obstacle['size']['height']) ),
@@ -72,13 +76,41 @@ class Game(State):
                 y = obstacle['position']['y'])
             for obstacle in list(OBSTACLES.values()) if obstacle['type'] == 1]  
 
-    #def add_obstacle(self, pos_y):
-    #    x_positions = [150, 450]
 
-    #    self.gameboard.obstacles.append( Obstacle(
-    #            image = image.Image.create( (50, 200) ), # TODO: replace with random or sth
-    #            x = obstacle['position']['x'],
-    #            y = obstacle['position']['y'])
+    def edit_obstacles_list(self, screen):
+        self.check_append_obstacle(screen)
+        self.check_remove_obstacle(screen)
+
+
+    def append_obstacle(self):
+
+        width = 50
+        x_positions = [150, 450]
+
+        for x_pos in x_positions:
+
+            height = random.randint(50, 400)
+            distance = random.randint(10, 150)
+
+            self.gameboard.obstacles.append( Obstacle(
+                image = image.Image.create( (width, height) ), 
+                x = x_pos,
+                y = self.gameboard.obstacles[-2].rect.y - distance - height)
+                )
+
+    def remove_obstacle(self, n = 0):
+        del self.gameboard.obstacles[n]
+
+
+    def check_append_obstacle(self, screen):
+        if abs(self.gameboard.obstacles[-1].rect.y - self.player.rect.y) < pygame.display.get_surface().get_rect().height:
+            self.append_obstacle()
+
+    
+    def check_remove_obstacle(self, screen):
+        if abs(self.gameboard.obstacles[0].rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
+            self.remove_obstacle()
+
 
     def check_game_result(self):
         if self.player.is_crashed():

@@ -23,28 +23,14 @@ OBSTACLES = {
     'P_01' : {
         'type' : 1,
         'position': {'x': 0, 'y': 700}, 
-        'size': {'width': 600, 'height': 50}
+        'size': {'width': 300, 'height': 50}
         },
     
-    
-    'W_03' : {
+    'P_02' : {
         'type' : 1,
-        'position': {'x': 150, 'y': 75}, 
-        'size': {'width': 50, 'height': 250}
-        },
-
-    'W_04' : {
-        'type' : 1,
-        'position': {'x': 450, 'y': 275}, 
-        'size': {'width': 50, 'height': 250}
-        },
-
-    'W_05' : {
-        'type' : 1,
-        'position': {'x': 150, 'y': 475}, 
-        'size': {'width': 50, 'height': 250}
+        'position': {'x': 300, 'y': 700}, 
+        'size': {'width': 300, 'height': 50}
         }
-
     }
             
 
