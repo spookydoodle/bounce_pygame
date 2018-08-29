@@ -10,7 +10,7 @@ from bounce.router import Router
 from bounce.destination import Destination
 from bounce import image, image_paths
 
-size = width, height = (600, 800)
+size = width, height = (650, 800)
 
 # Set game window frame, background amd fonts for printing
 pygame.init()

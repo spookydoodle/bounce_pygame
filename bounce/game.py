@@ -16,7 +16,7 @@ class Game(State):
         self.active_state = "Play"
         self.level = 0
 
-        self.gameboard = GameBoard([])
+        self.gameboard = GameBoard([], [])
 
         self.player = Player(speed_unit = 8)
         self.player.rect.x = 200
@@ -84,17 +84,17 @@ class Game(State):
     def append_obstacle(self):
 
         width = 50
-        x_positions = [150, 450]
+        x_positions = [100, 300, 500]
 
         for x_pos in x_positions:
 
             height = random.randint(100, 400)
-            distance = random.randint(10, 150)
+            distance = random.randint(75, 150)
 
             self.gameboard.obstacles.append( Obstacle(
                 image = image.Image.create( (width, height) ), 
                 x = x_pos,
-                y = self.gameboard.obstacles[-2].rect.y - distance - height)
+                y = self.gameboard.obstacles[-len(x_positions)].rect.y - distance - height)
                 )
 
     def remove_obstacle(self, n = 0):

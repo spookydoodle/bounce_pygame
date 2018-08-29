@@ -4,8 +4,9 @@ class GameBoard:
     MIN_POSITION = -2 ** 31
     MAX_POSITION = 2 ** 31
 
-    def __init__(self, obstacles):
+    def __init__(self, obstacles, collectables):
         self.obstacles = obstacles
+        self.collectables = collectables
 
     def obstacles_under(self, player):
         """
@@ -60,9 +61,10 @@ class GameBoard:
 
         return max(limits + [self.MIN_POSITION])
 
-    # returns true if there are no obstacles on the right/left to the player
-    def is_no_right_limit(self, player):
-        return self.limit_right(player) == self.MAX_POSITION
 
-    def is_no_left_limit(self, player):
-        return self.limit_left(player) == self.MIN_POSITION
+    # returns true if player is colliding with the nearest obstacle on their right hand side
+    def is_colliding_right(self, player):
+        return player.rect.right == self.limit_right(player)
+
+    def is_colliding_left(self, player):
+        return player.rect.left == self.limit_left(player)

@@ -82,10 +82,10 @@ class Player(pygame.sprite.Sprite):
 
 
             # fall to the right/left if obstacle's end is reached
-            if self.direction == 'R' and gameboard.is_no_right_limit(self):
+            if self.direction == 'R' and  not gameboard.is_colliding_right(self):
                 self.v_x = self.speed_unit
 
-            if self.direction == 'L' and gameboard.is_no_left_limit(self):
+            if self.direction == 'L' and not gameboard.is_colliding_left(self):
                 self.v_x = - self.speed_unit
 
 
