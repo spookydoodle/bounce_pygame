@@ -46,6 +46,10 @@ GAME_OBJECTS = {
         },
 
     # obstacles, type 3
-
+    'O_01' : {
+        'type' : 3,
+        'position': {'x': 250, 'y': -400}, 
+        'size': {'width': 50, 'height': 50}
+        },
 
     }

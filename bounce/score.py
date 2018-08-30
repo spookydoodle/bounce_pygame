@@ -5,7 +5,7 @@ class Score:
     Meters equal to the number of pixels player went up
     """
 
-    def __init__(self, init_number_of_lives = 1):
+    def __init__(self, init_number_of_lives = 3):
         self.init_number_of_lives = init_number_of_lives
         self.number_of_lives = init_number_of_lives
         self.points = 0

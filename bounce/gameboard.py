@@ -4,9 +4,10 @@ class GameBoard:
     MIN_POSITION = -2 ** 31
     MAX_POSITION = 2 ** 31
 
-    def __init__(self, walls, collectables):
+    def __init__(self, walls, collectables, obstacles):
         self.walls = walls
         self.collectables = collectables
+        self.obstacles = obstacles
 
     def walls_under(self, player):
         """
