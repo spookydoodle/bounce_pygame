@@ -63,8 +63,11 @@ class GameBoard:
 
 
     # returns true if player is colliding with the nearest wall on their right hand side
-    def is_colliding_right(self, player):
+    def is_colliding_wall_right(self, player):
         return player.rect.right == self.limit_right(player)
 
-    def is_colliding_left(self, player):
+    def is_colliding_wall_left(self, player):
         return player.rect.left == self.limit_left(player)
+
+
+    

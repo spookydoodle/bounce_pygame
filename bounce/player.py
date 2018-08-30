@@ -82,10 +82,10 @@ class Player(pygame.sprite.Sprite):
 
 
             # fall to the right/left if obstacle's end is reached
-            if self.direction == 'R' and  not gameboard.is_colliding_right(self):
+            if self.direction == 'R' and  not gameboard.is_colliding_wall_right(self):
                 self.v_x = self.speed_unit
 
-            if self.direction == 'L' and not gameboard.is_colliding_left(self):
+            if self.direction == 'L' and not gameboard.is_colliding_wall_left(self):
                 self.v_x = - self.speed_unit
 
 
@@ -125,22 +125,6 @@ class Player(pygame.sprite.Sprite):
 
 
     def move_y(self, gameboard):
-        ## NOTE: this has to be computed *before* modifying self.rect.y
-        #floor = gameboard.limit_under(self)
-
-        ## Calculate y-acceleration (gravity pull)
-        #a = self.m * self.G
-
-        ## Update y-speed with new acceleration
-        #self.v_y += a
-
-        ## Update y-position
-        #self.rect.y += self.v_y
-            
-        #floor_hit = self.rect.bottom > floor
-        #if floor_hit:
-        #    self.stop_movement_y(floor)
-
         self.rect.y += self.v_y
 
 

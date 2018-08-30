@@ -28,7 +28,7 @@ class Game(State):
         self.player.rect.x = 200
         self.player.rect.bottom = -100
         
-        self.score = Score(3)
+        self.score = Score(1)
 
         self.won_level = False
         self.new_level = True
@@ -64,7 +64,7 @@ class Game(State):
                 self.camera.adjust(screen, self.player)
 
                 self.player.move(screen, event, self.gameboard)
-                #self.check_game_result()
+                self.update_scores()
 
             # You won level screen - press any key to move to next level
             else: 
@@ -155,11 +155,26 @@ class Game(State):
     def check_remove_collectable(self, screen):
         if abs(self.gameboard.collectables[0].rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
             self.remove_collectable()
+    
+
+    def update_scores(self):
+        self.score.update_meters(- self.player.rect.y)
+        self.check_collectables()
+
+
+    def check_collectables(self):
+    
+        collision_list = pygame.sprite.spritecollide(self.player, self.gameboard.collectables, False)
+
+        for collectable in collision_list:
+            self.gameboard.collectables.remove(collectable)
+            self.score.add_points()
+
 
     def is_game_over(self):
         return self.player.is_crashed()
 
-    
+
     def game_over_continue(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key in CONTROLS["YES"]:
@@ -221,10 +236,14 @@ class Game(State):
 
 
     def draw_game_over_screen(self, screen, font, color):
-        game_over_text = ["You lost!", "Total score: {}".format(self.score.total_score),  "Do you want to continue? Y/N"]
+        game_over_text = ["You lost!", 
+                          "Points collected: {}!".format(self.score.points), 
+                          "You went up {} meters!".format(self.score.meters),
+                          "",
+                          "Do you want to continue? Y/N"]
 
         for i, text in enumerate(game_over_text):
-            draw_text(screen, text, font, color, "L", 100, 300 + i * 50)
+            draw_text(screen, text, font, color, "L", 100, 250 + i * 50)
 
 
     def draw_ground(self, screen, color):
@@ -235,7 +254,8 @@ class Game(State):
         font = pygame.font.SysFont('Arial', 20)
         game_results_list = ["Level: {}".format(self.level),
                              "Lives: {}".format(str(score.number_of_lives)),
-                             "Score: {}".format(str(score.total_score))]
+                             "Meters: {}".format(str(score.meters)),
+                             "Points: {}".format(str(score.points))]
         
         for n, result in enumerate(game_results_list):
             draw_text(screen, result, font, color, "R", screen.get_rect().width - 10, (10 + n*30))
