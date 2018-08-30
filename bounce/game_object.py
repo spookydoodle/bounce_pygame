@@ -2,7 +2,7 @@ import pygame
 from pygame.locals import *
 
 
-class Obstacle(pygame.sprite.Sprite):
+class GameObject(pygame.sprite.Sprite):
 
     def __init__(self, image, x = 0, y = 0):
         super().__init__()

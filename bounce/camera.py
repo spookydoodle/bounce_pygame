@@ -40,14 +40,14 @@ class Camera:
             """
             see `adjust_x`
             """
-            margin_top = 0.7
-            margin_bottom = 0.2
+            margin_top = 0.3
+            margin_bottom = 0.3
 
             cam_thresh_top = margin_top * screen_rect.height
             cam_thresh_bottom = margin_bottom * screen_rect.height
 
             player_position = player_rect.y + player_rect.height / 2
-            camera_focus = self.y + 3 * screen_rect.height / 5
+            camera_focus = self.y + screen_rect.height
 
             relative_player_position = player_position - camera_focus
 

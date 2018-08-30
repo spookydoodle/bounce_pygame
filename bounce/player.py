@@ -31,7 +31,7 @@ class Player(pygame.sprite.Sprite):
         # acceleration, velocity, mass - used for acceleration and deceleration. 
         # separate velocities for movement on x axis (right/left) and y axis (jump)
         self.v_x = 0
-        self.v_y = 0
+        self.v_y = - self.speed_unit/3
         self.m = 4
 
         # initial direction - to the left
@@ -141,7 +141,7 @@ class Player(pygame.sprite.Sprite):
         #if floor_hit:
         #    self.stop_movement_y(floor)
 
-        self.rect.y -= 1
+        self.rect.y += self.v_y
 
 
     def jump(self):
@@ -157,14 +157,15 @@ class Player(pygame.sprite.Sprite):
 
     def handle_images(self):
 
-        if self.is_mid_air():
-            if self.is_moving_left():
-                img = image_paths.PLAYER_NOSE_MANUAL
-            else:
-                img = image_paths.PLAYER_MANUAL
-
-        elif self.is_crashed():
+        #if self.is_mid_x():
+        if self.is_crashed():
             img = image_paths.PLAYER_CRASH
+        
+        elif self.is_moving_right():
+            img = image_paths.PLAYER_MOVE_RIGHT
+
+        elif self.is_moving_left():
+            img = image_paths.PLAYER_MOVE_LEFT
 
         else:
             img = image_paths.PLAYER_MAIN

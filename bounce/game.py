@@ -1,13 +1,19 @@
 from .state import *
 from .player import *
 from .gameboard import *
-from .obstacles import *
-from .obstacles_list import *
+from .game_object import *
+from .game_objects_init_list import *
 from .score import *
 from .camera import *
 from .destination import Destination
 from . import image, image_paths
 import random
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
 
 class Game(State):
 
@@ -41,7 +47,8 @@ class Game(State):
         
         if self.new_level:
             self.level += 1
-            self.gameboard.obstacles = self.create_init_obstacles()
+            self.gameboard.walls = self.create_init_walls()
+            self.gameboard.collectables = self.create_init_collectables()
             self.player.rect.x = 200
             self.player.rect.bottom = -100
             self.new_level = False
@@ -49,8 +56,9 @@ class Game(State):
         if not self.is_game_over():
             if not self.won_level:
 
-                # append new obstacles and delete invisible ones depending on player.y position
-                self.edit_obstacles_list(screen)
+                # append new walls and delete invisible ones depending on player.y position
+                self.edit_walls_list(screen)
+                self.edit_collectables_list(screen)
                 
                 # changes x and y parameters of camera depending on the location of the player on the screen
                 self.camera.adjust(screen, self.player)
@@ -66,22 +74,22 @@ class Game(State):
         else:
             self.game_over_continue(event)
     
-    # return all obstacle objects listed in OBSTACLES in obstacles_list.py
-    def create_init_obstacles(self):
+    # return all wall objects listed in WALLS in walls_list.py
+    def create_init_walls(self):
         return [
-            Obstacle(
-                image = image.Image.create( (obstacle['size']['width'], obstacle['size']['height']) ),
-                x = obstacle['position']['x'],
-                y = obstacle['position']['y'])
-            for obstacle in list(OBSTACLES.values()) if obstacle['type'] == 1]  
+            GameObject(
+                image = image.Image.create( (wall['size']['width'], wall['size']['height']), color = BLUE ),
+                x = wall['position']['x'],
+                y = wall['position']['y'])
+            for wall in list(GAME_OBJECTS.values()) if wall['type'] == 1]  
 
 
-    def edit_obstacles_list(self, screen):
-        self.check_append_obstacle(screen)
-        self.check_remove_obstacle(screen)
+    def edit_walls_list(self, screen):
+        self.check_append_wall(screen)
+        self.check_remove_wall(screen)
 
 
-    def append_obstacle(self):
+    def append_wall(self):
 
         width = 50
         x_positions = [100, 300, 500]
@@ -91,25 +99,62 @@ class Game(State):
             height = random.randint(100, 400)
             distance = random.randint(75, 150)
 
-            self.gameboard.obstacles.append( Obstacle(
-                image = image.Image.create( (width, height) ), 
+            self.gameboard.walls.append( GameObject(
+                image = image.Image.create( (width, height), color = BLUE ), 
                 x = x_pos,
-                y = self.gameboard.obstacles[-len(x_positions)].rect.y - distance - height)
+                y = self.gameboard.walls[-len(x_positions)].rect.y - distance - height)
                 )
 
-    def remove_obstacle(self, n = 0):
-        del self.gameboard.obstacles[n]
+    def remove_wall(self, n = 0):
+        del self.gameboard.walls[n]
 
 
-    def check_append_obstacle(self, screen):
-        if abs(self.gameboard.obstacles[-1].rect.y - self.player.rect.y) < pygame.display.get_surface().get_rect().height:
-            self.append_obstacle()
+    def check_append_wall(self, screen):
+        if abs(self.gameboard.walls[-1].rect.y - self.player.rect.y) < pygame.display.get_surface().get_rect().height:
+            self.append_wall()
 
     
-    def check_remove_obstacle(self, screen):
-        if abs(self.gameboard.obstacles[0].rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
-            self.remove_obstacle()
+    def check_remove_wall(self, screen):
+        if abs(self.gameboard.walls[0].rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
+            self.remove_wall()
 
+
+    def create_init_collectables(self):
+        return [
+            GameObject(
+                image = image.Image.create( (collectable['size']['width'], collectable['size']['height']), color = GREEN ),
+                x = collectable['position']['x'],
+                y = collectable['position']['y'])
+            for collectable in list(GAME_OBJECTS.values()) if collectable['type'] == 2]  
+
+
+    def edit_collectables_list(self, screen):
+        self.check_append_collectable(screen)
+        self.check_remove_collectable(screen)
+            
+    def append_collectable(self):
+
+        width = 50
+        x_positions = [random.randint(150, 250), random.randint(350, 450)]
+
+        self.gameboard.collectables.append( GameObject(
+            image = image.Image.create( (50, 50), color = GREEN ), 
+            x = x_positions[random.randint(0, 1)],
+            y = self.gameboard.collectables[-1].rect.y - random.randint(0,500))
+            )
+
+    def remove_collectable(self, n = 0):
+        del self.gameboard.collectables[n]
+    
+
+    def check_append_collectable(self, screen):
+        if abs(self.gameboard.collectables[-1].rect.y - self.player.rect.y) < pygame.display.get_surface().get_rect().height:
+            self.append_collectable()
+    
+
+    def check_remove_collectable(self, screen):
+        if abs(self.gameboard.collectables[0].rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
+            self.remove_collectable()
 
     def is_game_over(self):
         return self.player.is_crashed()
@@ -130,50 +175,57 @@ class Game(State):
 
 
     def display_frame(self, screen, background_image):
-        WHITE = (255, 255, 255)
-        WHITE = (255, 255, 255)
-        BLACK = (0, 0, 0)
-        
+               
         font = pygame.font.SysFont('Arial', 40)
 
         # clean game area
-        screen.fill(WHITE, (0, 0, screen.get_size()[0], screen.get_size()[1]))
+        screen.fill(BLACK, (0, 0, screen.get_size()[0], screen.get_size()[1]))
 
         if not self.is_game_over():
 
             # main game
             if not self.won_level:
-                self.draw_main_game(screen, BLACK)
+                self.draw_main_game(screen)
+                self.draw_game_results(screen, self.score, WHITE)
 
             # you won level screen
             else:
-                # self.level - 1 because drawing takes place in main after score was increased
-                won_level_text = ["Level " + str(self.level) + " beated!", "Press Y key to continue"]
-                for i, text in enumerate(won_level_text):
-                    draw_text(screen, text, font, BLACK, "L", 500, 300 + i * 50)
+                self.draw_won_level_screen(screen, font, WHITE)
 
         # Game over screen
         else:
-            game_over_text = ["You lost!", "Total score: {}".format(self.score.total_score),  "Do you want to continue? Y/N"]
-            for i, text in enumerate(game_over_text):
-                draw_text(screen, text, font, BLACK, "L", 100, 300 + i * 50)
+            self.draw_main_game(screen)
+            self.draw_game_over_screen(screen, font, WHITE)
 
-            self.draw_main_game(screen, BLACK)
 
         pygame.display.update()
 
     
-    def draw_main_game(self, screen, color):
+    def draw_main_game(self, screen):
 
-        # draw sprites (player and obstacles)
+        # draw sprites (player and walls)
         draw_rect(screen, self.camera, self.player.rect, self.player.image)
 
-        for sprite in self.gameboard.obstacles:
-            draw_rect(screen, self.camera, sprite.rect, sprite.image) 
+        for sprite in self.gameboard.walls:
+            draw_rect(screen, self.camera, sprite.rect, sprite.image)
 
-        # Draw scores in right top corner
-        self.draw_game_results(screen, self.score, color)
+        for sprite in self.gameboard.collectables:
+            draw_rect(screen, self.camera, sprite.rect, sprite.image) 
   
+    
+    def draw_won_level_screen(self, screen, font, color):
+        won_level_text = ["Level " + str(self.level) + " beated!", "Press Y key to continue"]
+
+        for i, text in enumerate(won_level_text):
+            draw_text(screen, text, font, color, "L", 500, 300 + i * 50)
+
+
+    def draw_game_over_screen(self, screen, font, color):
+        game_over_text = ["You lost!", "Total score: {}".format(self.score.total_score),  "Do you want to continue? Y/N"]
+
+        for i, text in enumerate(game_over_text):
+            draw_text(screen, text, font, color, "L", 100, 300 + i * 50)
+
 
     def draw_ground(self, screen, color):
         screen.fill(color, (0, 700, screen.get_size()[0], 20))
