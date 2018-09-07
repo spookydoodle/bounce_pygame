@@ -1,9 +1,13 @@
 import pygame
 from pygame.locals import *
 from .game_object import *
-from .constants import *
 
-from . import image, image_paths
+from silnik import image
+from silnik.rendering.shape import Polygon, rectangle
+from silnik.rendering.point import Point
+
+from .constants import *
+from . import image_paths
 
 
 class Player(pygame.sprite.Sprite):
@@ -83,11 +87,12 @@ class Player(pygame.sprite.Sprite):
 
 
             # fall to the right/left if obstacle's end is reached
-            if self.direction == 'R' and  not gameboard.is_colliding_wall_right(self):
-                self.v_x = self.speed_unit
+            # FIXME: commented out because `gameboard` implementation is not yet ready
+            # if self.direction == 'R' and  not gameboard.is_colliding_wall_right(self):
+            #     self.v_x = self.speed_unit
 
-            if self.direction == 'L' and not gameboard.is_colliding_wall_left(self):
-                self.v_x = - self.speed_unit
+            # if self.direction == 'L' and not gameboard.is_colliding_wall_left(self):
+            #     self.v_x = - self.speed_unit
 
 
         # call movement functions after handling user input
@@ -163,12 +168,17 @@ class Player(pygame.sprite.Sprite):
         if event.type == pygame.KEYDOWN:
 
             if event.key in CONTROLS["G_SHOOT"]:
-                gameboard.bullets.append( GameObject(
-                image = image.Image.create( (width, width * 1.5), color = Colors.MAGENTA ), 
-                x = (self.rect.left + self.rect.right) / 2 - width / 2,
-                y = self.rect.top)
-                )
+                gameboard.bullets.append(self.create_bullet(
+                    (width, width * 1.5),
+                    x = (self.rect.left + self.rect.right) / 2 - width / 2,
+                    y = self.rect.top))
 
+    def create_bullet(self, size, x, y):
+        shape = rectangle(Point(0, 0), Point(*size))
+        return GameObject(
+            image = image.Image.create(shape, color = Colors.MAGENTA ),
+            x = x,
+            y = y)
 
     def move_bullets(self, gameboard, bullet_speed):
         for bullet in gameboard.bullets:
