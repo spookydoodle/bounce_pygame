@@ -10,7 +10,7 @@ CONTROLS = {"M_UP" : [pygame.K_w, pygame.K_UP],
             "G_LEFT" : [pygame.K_a, pygame.K_LEFT],
             "G_MANUAL" : [pygame.K_w, pygame.K_UP],
             "G_OLLIE" : [pygame.K_SPACE],
-            "G_KICKFLIP" : [],
+            "G_SHOOT" : [pygame.K_SPACE],
             "G_BACKFLIP" : [],
             "G_GRIND" : [],
 

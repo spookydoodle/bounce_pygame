@@ -14,6 +14,7 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
+MAGENTA = (255, 0, 255)
 
 class Game(State):
 
@@ -22,7 +23,10 @@ class Game(State):
         self.active_state = "Play"
         self.level = 0
 
-        self.gameboard = GameBoard([], [], [])
+        self.gameboard = GameBoard(walls = [], 
+                                   collectables = [], 
+                                   obstacles = [], 
+                                   bullets = [])
 
         self.player = Player(speed_unit = 8)
         self.player.rect.x = 200
@@ -50,6 +54,7 @@ class Game(State):
             self.gameboard.walls = self.create_init_walls()
             self.gameboard.collectables = self.create_init_collectables()
             self.gameboard.obstacles = self.create_init_obstacles()
+            self.gameboard.bullets = []
             self.player.rect.x = 200
             self.player.rect.bottom = -100
             self.new_level = False
@@ -64,6 +69,8 @@ class Game(State):
                 self.camera.adjust(screen, self.player)
 
                 self.player.move(screen, event, self.gameboard)
+                self.append_bullet(event)
+                self.move_bullets(12)
                 self.update_scores()
 
             # You won level screen - press any key to move to next level
@@ -135,7 +142,7 @@ class Game(State):
 
         self.gameboard.collectables.append( GameObject(
             image = image.Image.create( (50, 50), color = GREEN ), 
-            x = x_positions[random.randint(0, 1)],
+            x = x_positions[random.randint(0, (len(x_positions)-1))],
             y = self.gameboard.collectables[-1].rect.y - random.randint(0,500))
             )
             
@@ -146,7 +153,7 @@ class Game(State):
 
         self.gameboard.obstacles.append( GameObject(
             image = image.Image.create( (50, 50), color = RED ), 
-            x = x_positions[random.randint(0, 3)],
+            x = x_positions[random.randint(0, (len(x_positions)-1))],
             y = self.gameboard.obstacles[-1].rect.y - random.randint(200,500))
             )
 
@@ -155,6 +162,22 @@ class Game(State):
         self.append_collectable()
         self.append_obstacle()
 
+     
+    def append_bullet(self, event, width = 5):
+
+        if event.type == pygame.KEYDOWN:
+
+            if event.key in CONTROLS["G_SHOOT"]:
+                self.gameboard.bullets.append( GameObject(
+                image = image.Image.create( (width, width * 1.5), color = MAGENTA ), 
+                x = (self.player.rect.left + self.player.rect.right) / 2 - width / 2,
+                y = self.player.rect.top)
+                )
+
+
+    def move_bullets(self, bullet_speed):
+        for bullet in self.gameboard.bullets:
+            bullet.rect.y -= bullet_speed
 
     # remove game objectst which are not visible on the screen anymore
     def remove_game_object(self, game_object_list, n = 0):
@@ -244,13 +267,15 @@ class Game(State):
     
     def draw_main_game(self, screen):
 
-        game_object_lists = [self.gameboard.walls, self.gameboard.collectables, self.gameboard.obstacles]
+        game_object_lists = [self.gameboard.walls, 
+                             self.gameboard.collectables, 
+                             self.gameboard.obstacles, 
+                             self.gameboard.bullets]
 
         for game_object_list in game_object_lists:
             for sprite in game_object_list:
                 draw_rect(screen, self.camera, sprite.rect, sprite.image)
-
-
+                
         # draw player
         draw_rect(screen, self.camera, self.player.rect, self.player.image)
 
