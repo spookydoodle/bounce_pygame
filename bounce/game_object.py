@@ -47,5 +47,4 @@ class GameObject(pygame.sprite.Sprite):
         distance_x = other_rect.distance_x(self.rect)
         distance_y = other_rect.distance_y(self.rect)
 
-        print(distance_x, distance_y)
         return 0 < distance_x < self.rect.width and 0 < distance_y < self.rect.height
