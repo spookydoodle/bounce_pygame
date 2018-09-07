@@ -28,8 +28,9 @@ class Game(State):
         self.player.rect.x = 200
         self.player.rect.bottom = -100
         
-        self.last_obstacle_y = 0
-        self.last_collectable_y = 0
+        self.last_wall_y = -420
+        self.last_collectable_y = -1000
+        self.last_obstacle_y = -400
 
         self.score = Score(3)
 
@@ -67,6 +68,7 @@ class Game(State):
                       "C",  len(self.gameboard.collectables),
                       "O", len(self.gameboard.obstacles),
                       "B",  len(self.gameboard.bullets),)
+                print(self.last_wall_y, self.last_collectable_y, self.last_obstacle_y, self.player.rect.y)
                 
                 # changes x and y parameters of camera depending on the location of the player on the screen
                 self.camera.adjust(screen, self.player)
@@ -124,12 +126,18 @@ class Game(State):
                 self.gameboard.obstacles,
                 self.gameboard.bullets]
 
+    def last_game_object_y(self, game_object_list):
+
+        if game_object_list == self.gameboard.walls: return self.last_wall_y
+        if game_object_list == self.gameboard.collectables: return self.last_collectable_y
+        if game_object_list == self.gameboard.obstacles: return self.last_obstacle_y
+
 
     def edit_game_objects(self, screen):
 
         for game_object_list in self.game_object_lists():
 
-            self.check_append_game_objects(screen, game_object_list)
+            self.check_append_game_objects(screen, game_object_list, self.last_game_object_y(game_object_list))
             self.check_remove_game_object(screen, game_object_list)
 
 
@@ -137,6 +145,7 @@ class Game(State):
 
         width = 50
         x_positions = [100, 300, 500]
+        self.last_wall_y = self.gameboard.walls[-len(x_positions)].rect.y
 
         for x_pos in x_positions:
 
@@ -146,7 +155,7 @@ class Game(State):
             self.gameboard.walls.append( GameObject(
                 image = image.Image.create( (width, height), color = Colors.BLUE ), 
                 x = x_pos,
-                y = self.gameboard.walls[-len(x_positions)].rect.y - distance - height)
+                y = self.last_wall_y - distance - height)
                 )
             
     def append_collectable(self):
@@ -183,9 +192,9 @@ class Game(State):
         del game_object_list[n]
 
 
-    def check_append_game_objects(self, screen, game_object_list):
+    def check_append_game_objects(self, screen, game_object_list, last_y):
         if game_object_list != self.gameboard.bullets:
-            if abs(game_object_list[-1].rect.y - self.player.rect.y) < pygame.display.get_surface().get_rect().height:
+            if abs(last_y - self.player.rect.y) < pygame.display.get_surface().get_rect().height:
                 self.append_game_objects()
 
     
