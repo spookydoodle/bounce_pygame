@@ -43,25 +43,25 @@ class GameBoard:
         return ans
 
     def limit_under(self, player):
-        limits = [
-            wall.rect.top
+        distances = [
+            player.rect.distance_y(wall.rect) - 1
             for wall in self.walls_under(player)]
         
-        return min(limits + [self.MAX_POSITION])
+        return min(distances + [self.MAX_POSITION])
 
     def limit_right(self, player):
-        limits = [
-            wall.rect.left
+        distances = [
+            player.rect.distance_x(wall.rect) - 1
             for wall in self.walls_right(player)]
 
-        return min(limits + [self.MAX_POSITION])
+        return min(distances + [self.MAX_POSITION])
 
     def limit_left(self, player):
-        limits = [
-            wall.rect.right
+        distances = [
+            player.rect.distance_x(wall.rect) + 1
             for wall in self.walls_left(player)]
 
-        return max(limits + [self.MIN_POSITION])
+        return max(distances + [self.MIN_POSITION])
 
 
     # returns true if player is colliding with the nearest wall on their right hand side

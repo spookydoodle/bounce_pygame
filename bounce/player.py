@@ -17,7 +17,7 @@ class Player(pygame.sprite.Sprite):
     ZERO = 0.01
 
     # gravity parameter used for relating jumping velocity to main velocity G * v
-    G = 0.9
+    G = 0  # set to 0 for now -> update to a positive value after implementing horizontal walls
     
     # elasticity parameter used to decrease velocity when hitting the ground
     ELASTICITY = 0.8
@@ -88,11 +88,11 @@ class Player(pygame.sprite.Sprite):
 
             # fall to the right/left if obstacle's end is reached
             # FIXME: commented out because `gameboard` implementation is not yet ready
-            # if self.direction == 'R' and  not gameboard.is_colliding_wall_right(self):
-            #     self.v_x = self.speed_unit
+            if self.direction == 'R' and  not gameboard.is_colliding_wall_right(self):
+                self.v_x = self.speed_unit
 
-            # if self.direction == 'L' and not gameboard.is_colliding_wall_left(self):
-            #     self.v_x = - self.speed_unit
+            if self.direction == 'L' and not gameboard.is_colliding_wall_left(self):
+                self.v_x = - self.speed_unit
 
 
         # call movement functions after handling user input
@@ -108,31 +108,39 @@ class Player(pygame.sprite.Sprite):
 
     def move_x(self, gameboard):
         # find x position of the closest obstacle edges on the right and left side of the player
-        # NOTE: this has to be computed *before* modifying self.rect.x
         limit_right = gameboard.limit_right(self)
         limit_left = gameboard.limit_left(self)
 
-        # update the position according to previously computed speed
-        self.rect.x += self.v_x
+        # stop movement if collision on either side of the player takes place
+        if self.is_moving_right() and self.v_x > limit_right:
+            wall = self.rect.right + limit_right
+            self.stop_movement_x(wall - self.rect.width)
         
-        # stop movement if collision on the right/left of the player takes place
-        self.check_stop_movement_right(limit_right)
-        self.check_stop_movement_left(limit_left)
-            
-    
-    def check_stop_movement_right(self, limit):
-        if self.is_moving_right() and self.rect.right > limit:
-            self.stop_movement_x(limit - self.rect.width)
-
-
-    def check_stop_movement_left(self, limit):
-        if self.is_moving_left() and self.rect.left < limit:
-            self.stop_movement_x(limit)
-
+        elif self.is_moving_left() and self.v_x < limit_left:
+            wall = self.rect.left + limit_left
+            self.stop_movement_x(wall)
+        
+        else:
+            # Free movement -> update the position based on the speed
+            self.rect.x += self.v_x
 
     def move_y(self, gameboard):
-        self.rect.y += self.v_y
+        limit = gameboard.limit_under(self)
 
+        # Calculate y-acceleration (gravity pull)
+        a = self.m * self.G
+
+        # Update y-speed with new acceleration
+        self.v_y += a
+
+        will_hit_floor = self.v_y > limit
+
+        if will_hit_floor:
+            floor = self.rect.bottom + limit
+            self.stop_movement_y(floor)
+        else:
+            # Update y-position
+            self.rect.y += self.v_y
 
     def jump(self):
         self.v_y = -self.speed_unit * self.LEAP_FORCE

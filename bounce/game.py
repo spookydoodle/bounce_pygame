@@ -256,9 +256,6 @@ class Game(State):
             for obstacle in self.gameboard.obstacles
             if obstacle.collides_with(self.player.rect)]
 
-        # import ipdb;ipdb.set_trace()
-        print(collision_list)
-
         for obstacle in collision_list:
             self.gameboard.obstacles.remove(obstacle)
             self.score.decrease_lives()
@@ -271,7 +268,7 @@ class Game(State):
             collision_list = [
                 bullet
                 for bullet in self.gameboard.bullets
-                if bullet.collides_with(self.player.rect)]
+                if bullet.collides_with(object.rect) or object.collides_with(bullet.rect)]
 
             for bullet in collision_list:
                 self.gameboard.bullets.remove(bullet)
