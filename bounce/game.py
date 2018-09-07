@@ -28,7 +28,7 @@ class Game(State):
         self.player.rect.x = 200
         self.player.rect.bottom = -100
         
-        self.last_wall_y = -420
+        self.last_wall_y = -390
         self.last_collectable_y = -1000
         self.last_obstacle_y = -400
 
@@ -145,10 +145,9 @@ class Game(State):
 
         width = 50
         x_positions = [100, 300, 500]
-        self.last_wall_y = self.gameboard.walls[-len(x_positions)].rect.y
-
+        
         for x_pos in x_positions:
-
+            self.last_wall_y = self.gameboard.walls[-len(x_positions)].rect.y
             height = random.randint(100, 400)
             distance = random.randint(75, 150)
 
