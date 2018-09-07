@@ -70,6 +70,3 @@ class GameBoard:
 
     def is_colliding_wall_left(self, player):
         return player.rect.left == self.limit_left(player)
-
-
-    

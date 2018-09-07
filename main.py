@@ -2,13 +2,14 @@ import os
 import string
 import pygame
 from pygame.locals import *
+from silnik import image
 from bounce.game import *
 from bounce.menu import *
 from bounce.controls import *
 from bounce.exit import Exit
 from bounce.router import Router
 from bounce.destination import Destination
-from bounce import image, image_paths
+from bounce import image_paths
 
 size = width, height = (650, 800)
 
