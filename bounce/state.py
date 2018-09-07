@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 from .render_functions import *
-from .dicts import *
+from .constants import *
 
 
 class State:

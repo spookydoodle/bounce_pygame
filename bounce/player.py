@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
-from .dicts import *
+from .game_object import *
+from .constants import *
 
 from . import image, image_paths
 
@@ -155,3 +156,20 @@ class Player(pygame.sprite.Sprite):
             img = image_paths.PLAYER_MAIN
         
         self.image = image.Image.load(img)
+
+     
+    def append_bullet(self, event, gameboard, width = 5):
+
+        if event.type == pygame.KEYDOWN:
+
+            if event.key in CONTROLS["G_SHOOT"]:
+                gameboard.bullets.append( GameObject(
+                image = image.Image.create( (width, width * 1.5), color = Colors.MAGENTA ), 
+                x = (self.rect.left + self.rect.right) / 2 - width / 2,
+                y = self.rect.top)
+                )
+
+
+    def move_bullets(self, gameboard, bullet_speed):
+        for bullet in gameboard.bullets:
+            bullet.rect.y -= bullet_speed

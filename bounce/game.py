@@ -6,15 +6,11 @@ from .game_objects_init_list import *
 from .score import *
 from .camera import *
 from .destination import Destination
+from .constants import *
 from . import image, image_paths
 import random
 
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
-MAGENTA = (255, 0, 255)
+
 
 class Game(State):
 
@@ -32,6 +28,9 @@ class Game(State):
         self.player.rect.x = 200
         self.player.rect.bottom = -100
         
+        self.last_obstacle_y = 0
+        self.last_collectable_y = 0
+
         self.score = Score(3)
 
         self.won_level = False
@@ -64,13 +63,22 @@ class Game(State):
 
                 # append new walls and delete invisible ones depending on player.y position
                 self.edit_game_objects(screen)
+                print("W", len(self.gameboard.walls),
+                      "C",  len(self.gameboard.collectables),
+                      "O", len(self.gameboard.obstacles),
+                      "B",  len(self.gameboard.bullets),)
                 
                 # changes x and y parameters of camera depending on the location of the player on the screen
                 self.camera.adjust(screen, self.player)
 
+                # update player and its bullets positions
                 self.player.move(screen, event, self.gameboard)
-                self.append_bullet(event)
-                self.move_bullets(12)
+                self.player.append_bullet(event, self.gameboard)
+                self.player.move_bullets(self.gameboard, 12)
+
+                self.check_bullets_game_objects_collision(self.gameboard.collectables)
+                self.check_bullets_game_objects_collision(self.gameboard.obstacles)
+
                 self.update_scores()
 
             # You won level screen - press any key to move to next level
@@ -85,7 +93,7 @@ class Game(State):
     def create_init_walls(self):
         return [
             GameObject(
-                image = image.Image.create( (wall['size']['width'], wall['size']['height']), color = BLUE ),
+                image = image.Image.create( (wall['size']['width'], wall['size']['height']), color = Colors.BLUE ),
                 x = wall['position']['x'],
                 y = wall['position']['y'])
             for wall in list(GAME_OBJECTS.values()) if wall['type'] == 1]
@@ -94,7 +102,7 @@ class Game(State):
     def create_init_collectables(self):
         return [
             GameObject(
-                image = image.Image.create( (collectable['size']['width'], collectable['size']['height']), color = GREEN ),
+                image = image.Image.create( (collectable['size']['width'], collectable['size']['height']), color = Colors.GREEN ),
                 x = collectable['position']['x'],
                 y = collectable['position']['y'])
             for collectable in list(GAME_OBJECTS.values()) if collectable['type'] == 2]
@@ -103,17 +111,23 @@ class Game(State):
     def create_init_obstacles(self):
         return [
             GameObject(
-                image = image.Image.create( (obstacle['size']['width'], obstacle['size']['height']), color = RED ),
+                image = image.Image.create( (obstacle['size']['width'], obstacle['size']['height']), color = Colors.RED ),
                 x = obstacle['position']['x'],
                 y = obstacle['position']['y'])
             for obstacle in list(GAME_OBJECTS.values()) if obstacle['type'] == 3]
 
 
+    def game_object_lists(self):
+
+        return [self.gameboard.walls, 
+                self.gameboard.collectables, 
+                self.gameboard.obstacles,
+                self.gameboard.bullets]
+
+
     def edit_game_objects(self, screen):
 
-        game_object_lists = [self.gameboard.walls, self.gameboard.collectables, self.gameboard.obstacles]
-
-        for game_object_list in game_object_lists:
+        for game_object_list in self.game_object_lists():
 
             self.check_append_game_objects(screen, game_object_list)
             self.check_remove_game_object(screen, game_object_list)
@@ -130,7 +144,7 @@ class Game(State):
             distance = random.randint(75, 150)
 
             self.gameboard.walls.append( GameObject(
-                image = image.Image.create( (width, height), color = BLUE ), 
+                image = image.Image.create( (width, height), color = Colors.BLUE ), 
                 x = x_pos,
                 y = self.gameboard.walls[-len(x_positions)].rect.y - distance - height)
                 )
@@ -139,22 +153,24 @@ class Game(State):
 
         width = 50
         x_positions = [random.randint(150, 250), random.randint(350, 450)]
+        self.last_collectable_y -= random.randint(0,500)
 
         self.gameboard.collectables.append( GameObject(
-            image = image.Image.create( (50, 50), color = GREEN ), 
+            image = image.Image.create( (50, 50), color = Colors.GREEN ), 
             x = x_positions[random.randint(0, (len(x_positions)-1))],
-            y = self.gameboard.collectables[-1].rect.y - random.randint(0,500))
+            y = self.last_collectable_y)
             )
             
     def append_obstacle(self):
 
         width = 50
         x_positions = [150, 250, 350, 450]
+        self.last_obstacle_y -= random.randint(200,500)
 
         self.gameboard.obstacles.append( GameObject(
-            image = image.Image.create( (50, 50), color = RED ), 
+            image = image.Image.create( (50, 50), color = Colors.RED ), 
             x = x_positions[random.randint(0, (len(x_positions)-1))],
-            y = self.gameboard.obstacles[-1].rect.y - random.randint(200,500))
+            y = self.last_obstacle_y)
             )
 
     def append_game_objects(self):
@@ -162,36 +178,22 @@ class Game(State):
         self.append_collectable()
         self.append_obstacle()
 
-     
-    def append_bullet(self, event, width = 5):
-
-        if event.type == pygame.KEYDOWN:
-
-            if event.key in CONTROLS["G_SHOOT"]:
-                self.gameboard.bullets.append( GameObject(
-                image = image.Image.create( (width, width * 1.5), color = MAGENTA ), 
-                x = (self.player.rect.left + self.player.rect.right) / 2 - width / 2,
-                y = self.player.rect.top)
-                )
-
-
-    def move_bullets(self, bullet_speed):
-        for bullet in self.gameboard.bullets:
-            bullet.rect.y -= bullet_speed
-
     # remove game objectst which are not visible on the screen anymore
     def remove_game_object(self, game_object_list, n = 0):
         del game_object_list[n]
 
 
     def check_append_game_objects(self, screen, game_object_list):
-        if abs(game_object_list[-1].rect.y - self.player.rect.y) < pygame.display.get_surface().get_rect().height:
-            self.append_game_objects()
+        if game_object_list != self.gameboard.bullets:
+            if abs(game_object_list[-1].rect.y - self.player.rect.y) < pygame.display.get_surface().get_rect().height:
+                self.append_game_objects()
 
     
     def check_remove_game_object(self, screen, game_object_list):
-        if abs(game_object_list[0].rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
-            self.remove_game_object(game_object_list)
+        #if game_object_list != self.gameboard.bullets or (game_object_list == self.gameboard.bullets and len(game_object_list) > 0):
+        if len(game_object_list) > 0:
+            if abs(game_object_list[0].rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
+                self.remove_game_object(game_object_list)
     
 
     def update_scores(self):
@@ -216,6 +218,18 @@ class Game(State):
         for obstacle in collision_list:
             self.gameboard.obstacles.remove(obstacle)
             self.score.decrease_lives()
+
+
+    def check_bullets_game_objects_collision(self, game_object_list):
+        
+        for object in game_object_list:
+
+            collision_list = pygame.sprite.spritecollide(object, self.gameboard.bullets, False)
+
+            for bullet in collision_list:
+                self.gameboard.bullets.remove(bullet)
+                game_object_list.remove(object)
+
 
 
     # TODO : player.is_crashed should be true also if player collides with an obstacle
@@ -243,23 +257,23 @@ class Game(State):
         font = pygame.font.SysFont('Arial', 40)
 
         # clean game area
-        screen.fill(BLACK, (0, 0, screen.get_size()[0], screen.get_size()[1]))
+        screen.fill(Colors.BLACK, (0, 0, screen.get_size()[0], screen.get_size()[1]))
 
         if not self.is_game_over():
 
             # main game
             if not self.won_level:
                 self.draw_main_game(screen)
-                self.draw_game_results(screen, self.score, WHITE)
+                self.draw_game_results(screen, self.score, Colors.WHITE)
 
             # you won level screen
             else:
-                self.draw_won_level_screen(screen, font, WHITE)
+                self.draw_won_level_screen(screen, font, Colors.WHITE)
 
         # Game over screen
         else:
             self.draw_main_game(screen)
-            self.draw_game_over_screen(screen, font, WHITE)
+            self.draw_game_over_screen(screen, font, Colors.WHITE)
 
 
         pygame.display.update()
@@ -267,12 +281,7 @@ class Game(State):
     
     def draw_main_game(self, screen):
 
-        game_object_lists = [self.gameboard.walls, 
-                             self.gameboard.collectables, 
-                             self.gameboard.obstacles, 
-                             self.gameboard.bullets]
-
-        for game_object_list in game_object_lists:
+        for game_object_list in self.game_object_lists():
             for sprite in game_object_list:
                 draw_rect(screen, self.camera, sprite.rect, sprite.image)
                 
