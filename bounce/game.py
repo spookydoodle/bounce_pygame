@@ -41,8 +41,11 @@ class Game(State):
 
         self.won_level = False
         self.new_level = True
-
-        self.camera = Camera()
+        
+        # Make the camera focus on the point above the player.
+        # Effectively renders the player on the bottom of the screen.
+        camera_focus_shift = Point(0, -300)
+        self.camera = Camera(camera_focus_shift)
 
 
     def next_destination(self):
