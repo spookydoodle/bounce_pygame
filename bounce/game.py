@@ -1,3 +1,7 @@
+from silnik import image
+from silnik.rendering.shape import Polygon, rectangle
+from silnik.rendering.point import Point
+
 from .state import *
 from .player import *
 from .gameboard import *
@@ -7,7 +11,8 @@ from .score import *
 from .camera import *
 from .destination import Destination
 from .constants import *
-from . import image, image_paths
+from . import image_paths
+
 import random
 
 
@@ -36,8 +41,11 @@ class Game(State):
 
         self.won_level = False
         self.new_level = True
-
-        self.camera = Camera()
+        
+        # Make the camera focus on the point above the player.
+        # Effectively renders the player on the bottom of the screen.
+        camera_focus_shift = Point(0, -300)
+        self.camera = Camera(camera_focus_shift)
 
 
     def next_destination(self):
@@ -90,34 +98,57 @@ class Game(State):
         # Game over screen action - press any key and move to menu
         else:
             self.game_over_continue(event)
-    
+
+    @staticmethod
+    def create_rectangle_image_from_data(size, color):
+        width, height = size
+        top_left = Point(0, 0)  # the top left corner has to be located at (0,0)
+        bottom_right = Point(width, height)
+        shape = rectangle(top_left, bottom_right)
+        return image.Image.create(shape, color)
+
+    @staticmethod
+    def dict_data_to_arguments(data):
+        x = data['position']['x']
+        y = data['position']['y']
+        width = data['size']['width']
+        height = data['size']['height']
+        size = (width, height)
+        return (size, x, y)
+
+    def create_wall(self, size, x, y):
+        return GameObject(
+            image = self.create_rectangle_image_from_data(size, color = Colors.BLUE ),
+            x = x,
+            y = y)
+
+    def create_collectable(self, size, x, y):
+        return GameObject(
+            image = self.create_rectangle_image_from_data(size, color = Colors.GREEN ),
+            x = x,
+            y = y)
+
+    def create_obstacle(self, size, x, y):
+        return GameObject(
+            image = self.create_rectangle_image_from_data(size, color = Colors.RED ),
+            x = x,
+            y = y)
+
     # return all wall objects listed in WALLS in walls_list.py
     def create_init_walls(self):
         return [
-            GameObject(
-                image = image.Image.create( (wall['size']['width'], wall['size']['height']), color = Colors.BLUE ),
-                x = wall['position']['x'],
-                y = wall['position']['y'])
-            for wall in list(GAME_OBJECTS.values()) if wall['type'] == 1]
-
+            self.create_wall(*self.dict_data_to_arguments(data))
+            for data in list(GAME_OBJECTS.values()) if data['type'] == 1]
 
     def create_init_collectables(self):
         return [
-            GameObject(
-                image = image.Image.create( (collectable['size']['width'], collectable['size']['height']), color = Colors.GREEN ),
-                x = collectable['position']['x'],
-                y = collectable['position']['y'])
-            for collectable in list(GAME_OBJECTS.values()) if collectable['type'] == 2]
-
+            self.create_collectable(*self.dict_data_to_arguments(data))
+            for data in list(GAME_OBJECTS.values()) if data['type'] == 2]
 
     def create_init_obstacles(self):
         return [
-            GameObject(
-                image = image.Image.create( (obstacle['size']['width'], obstacle['size']['height']), color = Colors.RED ),
-                x = obstacle['position']['x'],
-                y = obstacle['position']['y'])
-            for obstacle in list(GAME_OBJECTS.values()) if obstacle['type'] == 3]
-
+            self.create_obstacle(*self.dict_data_to_arguments(data))
+            for data in list(GAME_OBJECTS.values()) if data['type'] == 3]
 
     def game_object_lists(self):
 
@@ -151,23 +182,22 @@ class Game(State):
             height = random.randint(100, 400)
             distance = random.randint(75, 150)
 
-            self.gameboard.walls.append( GameObject(
-                image = image.Image.create( (width, height), color = Colors.BLUE ), 
-                x = x_pos,
-                y = self.last_wall_y - distance - height)
-                )
+            self.gameboard.walls.append(
+                self.create_wall(
+                    (width, height),
+                    x_pos,
+                    y = self.last_wall_y - distance - height))
             
     def append_collectable(self):
-
         width = 50
         x_positions = [random.randint(150, 250), random.randint(350, 450)]
         self.last_collectable_y -= random.randint(0,500)
 
-        self.gameboard.collectables.append( GameObject(
-            image = image.Image.create( (50, 50), color = Colors.GREEN ), 
-            x = x_positions[random.randint(0, (len(x_positions)-1))],
-            y = self.last_collectable_y)
-            )
+        self.gameboard.collectables.append(
+            self.create_collectable(
+                (50, 50),
+                x_positions[random.randint(0, (len(x_positions)-1))],
+                y = self.last_collectable_y))
             
     def append_obstacle(self):
 
@@ -175,11 +205,11 @@ class Game(State):
         x_positions = [150, 250, 350, 450]
         self.last_obstacle_y -= random.randint(200,500)
 
-        self.gameboard.obstacles.append( GameObject(
-            image = image.Image.create( (50, 50), color = Colors.RED ), 
-            x = x_positions[random.randint(0, (len(x_positions)-1))],
-            y = self.last_obstacle_y)
-            )
+        self.gameboard.obstacles.append(
+            self.create_obstacle(
+                (50, 50),
+                x_positions[random.randint(0, (len(x_positions)-1))],
+                self.last_obstacle_y))
 
     def append_game_objects(self):
         self.append_wall()
@@ -212,7 +242,10 @@ class Game(State):
 
     def check_collectables_collision(self):
     
-        collision_list = pygame.sprite.spritecollide(self.player, self.gameboard.collectables, False)
+        collision_list = [
+            collectable
+            for collectable in self.gameboard.collectables
+            if collectable.collides_with(self.player.rect)]
 
         for collectable in collision_list:
             self.gameboard.collectables.remove(collectable)
@@ -221,7 +254,10 @@ class Game(State):
 
     def check_obstacles_collision(self):
     
-        collision_list = pygame.sprite.spritecollide(self.player, self.gameboard.obstacles, False)
+        collision_list = [
+            obstacle
+            for obstacle in self.gameboard.obstacles
+            if obstacle.collides_with(self.player.rect)]
 
         for obstacle in collision_list:
             self.gameboard.obstacles.remove(obstacle)
@@ -232,7 +268,10 @@ class Game(State):
         
         for object in game_object_list:
 
-            collision_list = pygame.sprite.spritecollide(object, self.gameboard.bullets, False)
+            collision_list = [
+                bullet
+                for bullet in self.gameboard.bullets
+                if bullet.collides_with(object.rect) or object.collides_with(bullet.rect)]
 
             for bullet in collision_list:
                 self.gameboard.bullets.remove(bullet)
