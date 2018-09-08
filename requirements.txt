@@ -1,2 +1,2 @@
 pygame
-../silnik
+git+https://github.com/tomicprogramista/silnik#egg=silnik
