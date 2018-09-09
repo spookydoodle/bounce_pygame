@@ -1,69 +1,45 @@
 import pygame
-from pygame.locals import *
-from .game_object import *
-from .moving_object import MovingObject
 
 from silnik import image
 from silnik.rendering.shape import Polygon, rectangle
 from silnik.rendering.point import Point
 
-from .constants import *
+from .game_object import GameObject
+from .moving_object import MovingObject
+from .constants import Colors, CONTROLS
 from . import image_paths
 
 
 class Player(MovingObject):
 
-    # factor used to calculate max jump height, used to multiply player's speed unit
-    LEAP_FORCE = 5
-
     def __init__(self, speed_unit=1):
         img = image.Image.load(image_paths.PLAYER_MAIN)
-        super().__init__(image=img, speed_unit=speed_unit)
+        super().__init__(image=img, speed_unit=speed_unit, v_x0=-speed_unit, v_y0=-speed_unit/3, m=4)
 
-        # acceleration, velocity, mass - used for acceleration and deceleration. 
-        # separate velocities for movement on x axis (right/left) and y axis (jump)
-        self.v_x = 0
-        self.v_y = - self.speed_unit/3
-        self.m = 4
-
-        # initial direction - to the left
-        self.direction = 'L'
+        self.store_last_movement_direction()
 
     def is_crashed(self):
         return (self.rect.left < 50 or self.rect.right > 600)
 
-    # handle user input
-    # TODO: rename this method
-    def move(self, screen, event, gameboard):
-        
-        keystate = pygame.key.get_pressed()
+    def process_event(self, event):
 
-        if not self.is_mid_x():
+        if event.type == pygame.KEYDOWN and not self.is_mid_x():
 
-            ## here need to change to also use the dictionary CONTROLS - tbd later
-            #if (keystate[K_RIGHT] or keystate[K_d]):
-
-            if event.type == pygame.KEYDOWN:
-
-                if event.key in CONTROLS["G_RIGHT"]:
-                    self.direction = 'R'
-                    self.v_x = self.speed_unit
-
-                if event.key in CONTROLS["G_LEFT"]:
-                    self.direction = 'L'
-                    self.v_x = - self.speed_unit
-
-
-            # fall to the right/left if obstacle's end is reached
-            # FIXME: commented out because `gameboard` implementation is not yet ready
-            if self.direction == 'R' and  not gameboard.is_colliding_wall_right(self):
+            if event.key in CONTROLS["G_RIGHT"]:
                 self.v_x = self.speed_unit
 
-            if self.direction == 'L' and not gameboard.is_colliding_wall_left(self):
+            elif event.key in CONTROLS["G_LEFT"]:
                 self.v_x = - self.speed_unit
 
+    def move(self, gameboard):
+        self.store_last_movement_direction()
 
-        # call movement functions after handling user input
+        if self._last_movement_direction == 'R' and  not gameboard.is_colliding_wall_right(self):
+            self.v_x = self.speed_unit
+
+        elif self._last_movement_direction == 'L' and not gameboard.is_colliding_wall_left(self):
+            self.v_x = -self.speed_unit
+
         self.call_movement_functions(gameboard)
         self.handle_images()
 
@@ -77,9 +53,6 @@ class Player(MovingObject):
         elif direction == 'R':
             self.stop_movement_x(location.x - self.rect.width)
 
-    def jump(self):
-        self.v_y = -self.speed_unit * self.LEAP_FORCE
-
     def stop_movement_x(self, x):
         self.rect.x = x
         self.v_x = 0
@@ -89,8 +62,6 @@ class Player(MovingObject):
         self.v_y = 0
 
     def handle_images(self):
-
-        #if self.is_mid_x():
         if self.is_crashed():
             img = image_paths.PLAYER_CRASH
         
@@ -124,5 +95,14 @@ class Player(MovingObject):
             y = y)
 
     def move_bullets(self, gameboard, bullet_speed):
+        # TODO: create a `Bullet` class, derive from `MovingObject`, let it handle its own movement
         for bullet in gameboard.bullets:
             bullet.rect.y -= bullet_speed
+
+    def store_last_movement_direction(self):
+        # don't update if `self` is not currently moving
+        if self.v_x == 0:
+            pass
+        else:
+            direction = 'L' if self.v_x < 0 else 'R'
+            self._last_movement_direction = direction
