@@ -1,28 +1,27 @@
-import pygame
 from unittest import TestCase, mock
 
-from silnik import image
+from silnik.image import Image
 from silnik.rendering.point import Point
+from silnik.rendering.shape import rectangle
 
 from bounce.gameboard import GameBoard
 from bounce.game_object import GameObject
 from bounce.moving_object import MovingObject
-from bounce import image_paths
 
 class TestMovingObject(TestCase):
     """
     Base TestCase to share the setup logic and data
     """
     def setUp(self):
-        size = width, height = (1280, 720)
-        screen = pygame.display.set_mode(size)  # FIXME: decouple GameObject from pygame.display
-        img = image.Image.load(image_paths.PLAYER_MAIN)  # some image is needed to construct an GameObject
-        
+        shape = rectangle(
+            Point(0, 0),
+            Point(100, 100))
+        img = Image("mock_raw_image", shape)
         self.object = MovingObject(img)
         self.base_rect = self.object.rect
 
     def make_wall(self, x=0, y=0):
-        img = image.Image.create(self.base_rect.clone())
+        img = Image.create(self.base_rect.clone())
         return GameObject(
             img,
             x=x + self.base_rect.width,
