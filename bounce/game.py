@@ -88,7 +88,8 @@ class Game(State):
                 self.player.process_event(event)
                 self.player.move(self.gameboard)
                 self.player.append_bullet(event, self.gameboard)
-                self.player.move_bullets(self.gameboard, 12)
+
+                self.move_bullets()
 
                 # FIXME: replace these methods with the `on_collision` event handlers
                 # self.check_bullets_game_objects_collision(self.gameboard.collectables)
@@ -256,6 +257,9 @@ class Game(State):
                 self.gameboard.bullets.remove(bullet)
                 game_object_list.remove(object)
 
+    def move_bullets(self):
+        for bullet in self.gameboard.bullets:
+            bullet.move(self.gameboard)
 
 
     # TODO : player.is_crashed should be true also if player collides with an obstacle

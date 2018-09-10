@@ -4,6 +4,7 @@ from silnik import image
 from silnik.rendering.shape import Polygon, rectangle
 from silnik.rendering.point import Point
 
+from .bullet import Bullet
 from .game_object import GameObject
 from .moving_object import MovingObject
 from .constants import Colors, CONTROLS
@@ -93,22 +94,12 @@ class Player(MovingObject):
         if event.type == pygame.KEYDOWN:
 
             if event.key in CONTROLS["G_SHOOT"]:
-                gameboard.bullets.append(self.create_bullet(
-                    (width, width * 1.5),
+                
+                bullet = Bullet(
                     x = (self.rect.left + self.rect.right) / 2 - width / 2,
-                    y = self.rect.top))
-
-    def create_bullet(self, size, x, y):
-        shape = rectangle(Point(0, 0), Point(*size))
-        return GameObject(
-            image = image.Image.create(shape, color = Colors.MAGENTA ),
-            x = x,
-            y = y)
-
-    def move_bullets(self, gameboard, bullet_speed):
-        # TODO: create a `Bullet` class, derive from `MovingObject`, let it handle its own movement
-        for bullet in gameboard.bullets:
-            bullet.rect.y -= bullet_speed
+                    y = self.rect.top)
+                
+                gameboard.bullets.append(bullet)
 
     def store_last_movement_direction(self):
         # don't update if `self` is not currently moving
