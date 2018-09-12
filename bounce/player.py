@@ -19,6 +19,7 @@ class Player(MovingObject):
         self.store_last_movement_direction()
 
     def is_crashed(self):
+        return False
         return (self.rect.left < 50 or self.rect.right > 600)
 
     def process_event(self, event):
@@ -34,7 +35,7 @@ class Player(MovingObject):
     def move(self, gameboard):
         self.store_last_movement_direction()
 
-        if self._last_movement_direction == 'R' and  not gameboard.is_colliding_wall_right(self):
+        if self._last_movement_direction == 'R' and not gameboard.is_colliding_wall_right(self):
             self.v_x = self.speed_unit
 
         elif self._last_movement_direction == 'L' and not gameboard.is_colliding_wall_left(self):
@@ -43,15 +44,25 @@ class Player(MovingObject):
         self.call_movement_functions(gameboard)
         self.handle_images()
 
-    def on_collision(self, location, direction, object_hit=None):
-        if direction == 'U':
-            self.stop_movement_y(location.y)
-        elif direction == 'D':
-            self.stop_movement_y(location.y - self.rect.height)
-        elif direction == 'L':
-            self.stop_movement_x(location.x)
-        elif direction == 'R':
-            self.stop_movement_x(location.x - self.rect.width)
+    def on_collision_y(self, object_hit):
+        distance = self.rect.distance_y(object_hit.rect)
+        location = self.rect.y + distance
+        
+        if distance < 0:  # player must've been going down
+            # TODO: self.stop_movement_y(location + 1), remove the object
+            pass
+        else:
+            # TODO: self.stop_movement_y(location - 1), remove the object
+            pass
+
+    def on_collision_x(self, object_hit):
+        distance = self.rect.distance_x(object_hit.rect)
+        location = self.rect.x + distance
+
+        if distance < 0:  # player must've been going left
+            self.stop_movement_x(location + 1)
+        else:
+            self.stop_movement_x(location- 1)
 
     def stop_movement_x(self, x):
         self.rect.x = x

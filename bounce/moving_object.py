@@ -45,52 +45,111 @@ class MovingObject(GameObject):
         self.move_y(gameboard)
 
     def move_x(self, gameboard):
-        # find x position of the closest obstacle edges on the right and left side of the player
-        limit_right = gameboard.limit_right(self)
-        limit_left = gameboard.limit_left(self)
+        colliding_objects = self.get_colliding_objects_x(gameboard)
+        colliding_objects.sort(key=lambda obj: abs(self.rect.distance_x(obj.rect)))
 
-        # stop movement if collision on either side of the player takes place
-        if self.is_moving_right() and self.v_x > limit_right:
-            wall = self.rect.right + limit_right
-            self.on_collision(
-                location=Point(wall, self.rect.y),
-                direction='R')
+        if len(colliding_objects) > 0:
+            obj = colliding_objects[0]
+            self.on_collision_x(obj)
         
-        elif self.is_moving_left() and self.v_x < limit_left:
-            wall = self.rect.left + limit_left
-            self.on_collision(
-                location=Point(wall, self.rect.y),
-                direction='L')
-        
-        else:
-            # Free movement -> update the position based on the speed
-            self.rect.x += self.v_x
+        self.rect.x += self.v_x
 
     def move_y(self, gameboard):
-        limit = gameboard.limit_under(self)
-
         # Calculate y-acceleration (gravity pull)
         a = self.m * self.G
 
         # Update y-speed with new acceleration
         self.v_y += a
 
-        will_hit_floor = self.v_y > limit
+        # Get all objects on path
+        colliding_objects = self.get_colliding_objects_y(gameboard)
+        colliding_objects.sort(key=lambda obj: abs(self.rect.distance_y(obj.rect)))
+        
+        if len(colliding_objects) > 0:
+            # Trigger the collision handler for the first object
+            # TODO: add some magic to trigger multiple handlers
+            obj = colliding_objects[0]
+            self.on_collision_y(obj)
+            # TODO: obj.on_collision_y(self)
+    
+        # Update y-position
+        # This will get executed after calling all `on_collision` handlers
+        # If you want to stop `self` after collisions, make sure to set `v_y` to 0 in `on_collision`
+        self.rect.y += self.v_y
 
-        if will_hit_floor:
-            floor = self.rect.bottom + limit
-            self.on_collision(
-                location=Point(self.rect.x, floor),
-                direction='U')
+    def get_colliding_objects_x(self, gameboard):
+        """
+        Returns a list of objects that will collide with `self` in the current iteration
+
+        # NOTE: `self.v_x` value should be updated *before* calling this method
+        """            
+        # A function that takes an object and returns a distance in the `x` axis
+        distance_function = lambda obj: self.rect.distance_x(obj.rect)
+
+        if self.is_moving_right():
+            candidates = gameboard.objects_right(self)
+            return [
+                obj
+                for obj, distance in self._zipped_with(candidates, distance_function)
+                if distance < self.v_x
+            ]
+
+        elif self.is_moving_left():
+            candidates = gameboard.objects_left(self)
+
+            return [
+                obj
+                for obj, distance in self._zipped_with(candidates, distance_function)
+                if distance > self.v_x
+            ]
+
         else:
-            # Update y-position
-            self.rect.y += self.v_y
+            return []
 
-    def on_collision(self, location, direction, object_hit=None):
-        # TODO: refactor move_x/y a bit to get a reference to the
-        # colliding object (the `object_hit` variable) and the
-        # proper location (the current one is an approximation)
-        message = "{} needs to implement the `on_collision` method!".format(
+    def get_colliding_objects_y(self, gameboard):
+        """
+        Returns a list of objects that will collide with `self` in the current iteration
+
+        # NOTE: `self.v_y` value should be updated *before* calling this method
+        """            
+        # A function that takes an object and returns a distance in the `y` axis
+        distance_function = lambda obj: self.rect.distance_y(obj.rect)
+
+        if self.is_falling():
+            candidates = gameboard.objects_under(self)
+
+            return [
+                obj
+                for obj, distance in self._zipped_with(candidates, distance_function)
+                if distance < self.v_y
+            ]
+
+        elif self.is_jumping():
+            candidates = gameboard.objects_above(self)
+
+            return [
+                obj
+                for obj, distance in self._zipped_with(candidates, distance_function)
+                if distance > self.v_y
+            ]
+
+        else:
+            return []
+
+    @staticmethod
+    def _zipped_with(objects, func):
+        return zip(
+            objects,
+            [func(obj) for obj in objects])
+
+    def on_collision_x(self, object_hit):
+        message = "{} needs to implement the `on_collision` methods!".format(
+            self.__class__.__name__)
+
+        raise NotImplementedError(message)
+
+    def on_collision_y(self, object_hit):
+        message = "{} needs to implement the `on_collision` methods!".format(
             self.__class__.__name__)
 
         raise NotImplementedError(message)

@@ -54,8 +54,6 @@ class TestMove(TestMovingObject):
             self.base_rect.width + distance - 1,
             0)
 
-        with mock.patch.object(self.object, 'on_collision') as mock_collision:
+        with mock.patch.object(self.object, 'on_collision_x') as mock_collision:
             self.object.move_x(gameboard)
-            mock_collision.assert_called_once_with(
-                direction=expected_direction,
-                location=expected_location)
+            mock_collision.assert_called_once_with(wall_right)

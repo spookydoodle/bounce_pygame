@@ -46,18 +46,18 @@ class TestIsUnder(TestGameObject):
         self.assertFalse(
             self.object.is_under(self.rect_left))
 
-class TestIsOver(TestGameObject):
+class TestIsAbove(TestGameObject):
     def test_is_true_for_rect_below(self):
         self.assertTrue(
-            self.object.is_over(self.rect_below))
+            self.object.is_above(self.rect_below))
 
     def test_is_false_for_rect_above(self):
         self.assertFalse(
-            self.object.is_over(self.rect_above))
+            self.object.is_above(self.rect_above))
 
     def test_is_false_for_rect_on_the_side(self):
         self.assertFalse(
-            self.object.is_over(self.rect_left))
+            self.object.is_above(self.rect_left))
 
 class TestIsToTheRight(TestGameObject):
     def test_is_true_for_rect_on_the_left(self):
