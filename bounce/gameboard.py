@@ -1,3 +1,7 @@
+from .bullet import Bullet
+from .collectable import Collectable
+from .obstacle import Obstacle
+from .wall import Wall
 
 class GameBoard:
     # infinities to avoid crashes on empty sequence computations
@@ -9,6 +13,18 @@ class GameBoard:
         self.collectables = collectables
         self.obstacles = obstacles
         self.bullets = bullets
+
+    def of_type(self, type):
+        """
+        Filters access to a subset of known objects based on `type`
+        """
+        grouped_by_type = {
+            Bullet: self.bullets,
+            Collectable: self.collectables,
+            Obstacle: self.obstacles,
+            Wall: self.walls
+        }
+        return grouped_by_type[type]
 
     def all_objects(self):
         return self.walls + self.collectables + self.obstacles + self.bullets
@@ -100,3 +116,8 @@ class GameBoard:
 
     def is_colliding_wall_left(self, player):
         return player.rect.left == self.limit_left(player)
+
+    def remove(self, game_object):
+        obj_type = type(game_object)
+        known_objects_of_type = self.of_type(obj_type)
+        known_objects_of_type.remove(game_object)

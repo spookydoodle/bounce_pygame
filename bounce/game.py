@@ -196,11 +196,6 @@ class Game(State):
         self.append_collectable()
         self.append_obstacle()
 
-    # remove game objectst which are not visible on the screen anymore
-    def remove_game_object(self, game_object_list, n = 0):
-        del game_object_list[n]
-
-
     def check_append_game_objects(self, screen, game_object_list, last_y):
         if game_object_list != self.gameboard.bullets:
             if abs(last_y - self.player.rect.y) < pygame.display.get_surface().get_rect().height:
@@ -210,8 +205,9 @@ class Game(State):
     def check_remove_game_object(self, screen, game_object_list):
         #if game_object_list != self.gameboard.bullets or (game_object_list == self.gameboard.bullets and len(game_object_list) > 0):
         if len(game_object_list) > 0:
-            if abs(game_object_list[0].rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
-                self.remove_game_object(game_object_list)
+            first_object = game_object_list[0]
+            if abs(first_object.rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
+                self.gameboard.remove(first_object)
     
 
     def update_scores(self):
@@ -228,7 +224,7 @@ class Game(State):
             if collectable.collides_with(self.player.rect)]
 
         for collectable in collision_list:
-            self.gameboard.collectables.remove(collectable)
+            self.gameboard.remove(collectable)
             self.score.add_points()
 
 
@@ -240,7 +236,7 @@ class Game(State):
             if obstacle.collides_with(self.player.rect)]
 
         for obstacle in collision_list:
-            self.gameboard.obstacles.remove(obstacle)
+            self.gameboard.remove(obstacle)
             self.score.decrease_lives()
 
 
