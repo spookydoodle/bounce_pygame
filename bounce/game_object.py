@@ -19,7 +19,7 @@ class GameObject(pygame.sprite.Sprite):
         distance = other_rect.distance_y(self.rect)
         return distance != inf and distance > 0
     
-    def is_over(self, other_rect):
+    def is_above(self, other_rect):
         """
         Checks if `self` is located over `other_rect`, regardless of the distance
         """

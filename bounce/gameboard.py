@@ -10,6 +10,37 @@ class GameBoard:
         self.obstacles = obstacles
         self.bullets = bullets
 
+    def all_objects(self):
+        return self.walls + self.collectables + self.obstacles + self.bullets
+
+    def objects_under(self, player):
+        return [
+            obj
+            for obj in self.all_objects()
+            if obj.is_under(player.rect)
+        ]
+
+    def objects_above(self, player):
+        return [
+            obj
+            for obj in self.all_objects()
+            if obj.is_above(player.rect)
+        ]
+
+    def objects_left(self, player):
+        return [
+            obj
+            for obj in self.all_objects()
+            if obj.is_to_the_left(player.rect)
+        ]
+
+    def objects_right(self, player):
+        return [
+            obj
+            for obj in self.all_objects()
+            if obj.is_to_the_right(player.rect)
+        ]
+
     def walls_under(self, player):
         """
         All the walls currently positioned under the player
@@ -19,7 +50,6 @@ class GameBoard:
             for wall in self.walls
             if wall.is_under(player.rect)]
         return ans
-
 
     def walls_right(self, player):
         """

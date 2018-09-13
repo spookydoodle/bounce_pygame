@@ -82,12 +82,14 @@ class Game(State):
                 self.camera.adjust(screen, self.player)
 
                 # update player and its bullets positions
-                self.player.move(screen, event, self.gameboard)
+                self.player.process_event(event)
+                self.player.move(self.gameboard)
                 self.player.append_bullet(event, self.gameboard)
                 self.player.move_bullets(self.gameboard, 12)
 
-                self.check_bullets_game_objects_collision(self.gameboard.collectables)
-                self.check_bullets_game_objects_collision(self.gameboard.obstacles)
+                # FIXME: replace these methods with the `on_collision` event handlers
+                # self.check_bullets_game_objects_collision(self.gameboard.collectables)
+                # self.check_bullets_game_objects_collision(self.gameboard.obstacles)
 
                 self.update_scores()
 
