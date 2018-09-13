@@ -2,6 +2,9 @@ from silnik import image
 from silnik.rendering.shape import Polygon, rectangle
 from silnik.rendering.point import Point
 
+from .collectable import Collectable
+from .obstacle import Obstacle
+from .wall import Wall
 from .state import *
 from .player import *
 from .gameboard import *
@@ -102,14 +105,6 @@ class Game(State):
             self.game_over_continue(event)
 
     @staticmethod
-    def create_rectangle_image_from_data(size, color):
-        width, height = size
-        top_left = Point(0, 0)  # the top left corner has to be located at (0,0)
-        bottom_right = Point(width, height)
-        shape = rectangle(top_left, bottom_right)
-        return image.Image.create(shape, color)
-
-    @staticmethod
     def dict_data_to_arguments(data):
         x = data['position']['x']
         y = data['position']['y']
@@ -118,38 +113,20 @@ class Game(State):
         size = (width, height)
         return (size, x, y)
 
-    def create_wall(self, size, x, y):
-        return GameObject(
-            image = self.create_rectangle_image_from_data(size, color = Colors.BLUE ),
-            x = x,
-            y = y)
-
-    def create_collectable(self, size, x, y):
-        return GameObject(
-            image = self.create_rectangle_image_from_data(size, color = Colors.GREEN ),
-            x = x,
-            y = y)
-
-    def create_obstacle(self, size, x, y):
-        return GameObject(
-            image = self.create_rectangle_image_from_data(size, color = Colors.RED ),
-            x = x,
-            y = y)
-
     # return all wall objects listed in WALLS in walls_list.py
     def create_init_walls(self):
         return [
-            self.create_wall(*self.dict_data_to_arguments(data))
+            Wall.build(*self.dict_data_to_arguments(data))
             for data in list(GAME_OBJECTS.values()) if data['type'] == 1]
 
     def create_init_collectables(self):
         return [
-            self.create_collectable(*self.dict_data_to_arguments(data))
+            Collectable.build(*self.dict_data_to_arguments(data))
             for data in list(GAME_OBJECTS.values()) if data['type'] == 2]
 
     def create_init_obstacles(self):
         return [
-            self.create_obstacle(*self.dict_data_to_arguments(data))
+            Obstacle.build(*self.dict_data_to_arguments(data))
             for data in list(GAME_OBJECTS.values()) if data['type'] == 3]
 
     def game_object_lists(self):
@@ -185,7 +162,7 @@ class Game(State):
             distance = random.randint(75, 150)
 
             self.gameboard.walls.append(
-                self.create_wall(
+                Wall.build(
                     (width, height),
                     x_pos,
                     y = self.last_wall_y - distance - height))
@@ -196,7 +173,7 @@ class Game(State):
         self.last_collectable_y -= random.randint(0,500)
 
         self.gameboard.collectables.append(
-            self.create_collectable(
+            Collectable.build(
                 (50, 50),
                 x_positions[random.randint(0, (len(x_positions)-1))],
                 y = self.last_collectable_y))
@@ -208,7 +185,7 @@ class Game(State):
         self.last_obstacle_y -= random.randint(200,500)
 
         self.gameboard.obstacles.append(
-            self.create_obstacle(
+            Obstacle.build(
                 (50, 50),
                 x_positions[random.randint(0, (len(x_positions)-1))],
                 self.last_obstacle_y))
