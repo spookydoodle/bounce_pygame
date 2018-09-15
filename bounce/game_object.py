@@ -48,3 +48,12 @@ class GameObject(pygame.sprite.Sprite):
         distance_y = other_rect.distance_y(self.rect)
 
         return 0 < distance_x < self.rect.width and 0 < distance_y < self.rect.height
+
+    def on_collision_x(self, object_hit, gameboard):
+        pass
+
+    def on_collision_y(self, object_hit, gameboard):
+        pass
+
+    def destroy(self, gameboard):
+        gameboard.remove(self)

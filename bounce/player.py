@@ -45,18 +45,16 @@ class Player(MovingObject):
         self.call_movement_functions(gameboard)
         self.handle_images()
 
-    def on_collision_y(self, object_hit):
+    def on_collision_y(self, object_hit, gameboard):
         distance = self.rect.distance_y(object_hit.rect)
         location = self.rect.y + distance
         
         if distance < 0:  # player must've been going down
-            # TODO: self.stop_movement_y(location + 1), remove the object
-            pass
+            TODO: self.stop_movement_y(location + 1)
         else:
-            # TODO: self.stop_movement_y(location - 1), remove the object
-            pass
+            TODO: self.stop_movement_y(location - 1)
 
-    def on_collision_x(self, object_hit):
+    def on_collision_x(self, object_hit, gameboard):
         distance = self.rect.distance_x(object_hit.rect)
         location = self.rect.x + distance
 

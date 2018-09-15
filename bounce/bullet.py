@@ -21,8 +21,8 @@ class Bullet(MovingObject):
     def move(self, gameboard):
         self.call_movement_functions(gameboard)
 
-    def on_collision_x(self, object_hit):
-        print("Bullet collision x with {}".format(object_hit))
+    def on_collision_x(self, object_hit, gameboard):
+        self.destroy(gameboard)
 
-    def on_collision_y(self, object_hit):
-        print("Bullet collision y with {}".format(object_hit))
+    def on_collision_y(self, object_hit, gameboard):
+        self.destroy(gameboard)

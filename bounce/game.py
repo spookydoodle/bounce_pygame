@@ -240,19 +240,6 @@ class Game(State):
             self.score.decrease_lives()
 
 
-    def check_bullets_game_objects_collision(self, game_object_list):
-        
-        for object in game_object_list:
-
-            collision_list = [
-                bullet
-                for bullet in self.gameboard.bullets
-                if bullet.collides_with(object.rect) or object.collides_with(bullet.rect)]
-
-            for bullet in collision_list:
-                self.gameboard.bullets.remove(bullet)
-                game_object_list.remove(object)
-
     def move_bullets(self):
         for bullet in self.gameboard.bullets:
             bullet.move(self.gameboard)
