@@ -56,4 +56,4 @@ class TestMove(TestMovingObject):
 
         with mock.patch.object(self.object, 'on_collision_x') as mock_collision:
             self.object.move_x(gameboard)
-            mock_collision.assert_called_once_with(wall_right)
+            mock_collision.assert_called_once_with(wall_right, gameboard)
