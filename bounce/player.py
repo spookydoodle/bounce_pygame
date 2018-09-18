@@ -49,10 +49,10 @@ class Player(MovingObject):
         distance = self.rect.distance_y(object_hit.rect)
         location = self.rect.y + distance
         
-        if distance < 0:  # player must've been going down
-            TODO: self.stop_movement_y(location + 1)
+        if distance < 0:  # player must've been going up
+            self.stop_movement_y(location + 1)
         else:
-            TODO: self.stop_movement_y(location - 1)
+            self.stop_movement_y(location - 1)
 
     def on_collision_x(self, object_hit, gameboard):
         distance = self.rect.distance_x(object_hit.rect)
@@ -61,15 +61,14 @@ class Player(MovingObject):
         if distance < 0:  # player must've been going left
             self.stop_movement_x(location + 1)
         else:
-            self.stop_movement_x(location- 1)
+            self.stop_movement_x(location - 1)
 
     def stop_movement_x(self, x):
         self.rect.x = x
         self.v_x = 0
 
     def stop_movement_y(self, y):
-        self.rect.bottom = y
-        self.v_y = 0
+        self.rect.y = y
 
     def handle_images(self):
         if self.is_crashed():
