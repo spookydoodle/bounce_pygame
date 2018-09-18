@@ -15,10 +15,12 @@ class Obstacle(GameObject):
 
     def on_collision_x(self, object_hit, gameboard):
         from .bullet import Bullet  # import here to avoid a circular dependency on start (kinda hacky)
-        if isinstance(object_hit, Bullet):
+        from .player import Player
+        if isinstance(object_hit, Bullet) or isinstance(object_hit, Player):
             self.destroy(gameboard)
 
     def on_collision_y(self, object_hit, gameboard):
-        from .bullet import Bullet  # import here to avoid a circular dependency on start (kinda hacky)
-        if isinstance(object_hit, Bullet):
+        from .bullet import Bullet
+        from .player import Player
+        if isinstance(object_hit, Bullet) or isinstance(object_hit, Player):
             self.destroy(gameboard)

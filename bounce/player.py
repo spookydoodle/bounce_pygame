@@ -13,11 +13,19 @@ from . import image_paths
 
 class Player(MovingObject):
 
-    def __init__(self, speed_unit=1):
+    def __init__(self, speed_unit=1, on_obstacle_collision=None, on_collectable_collision=None):
+        # External functions to call when specific collisions happen
+        self.on_collectable_collision = on_collectable_collision or self._do_nothing
+        self.on_obstacle_collision = on_obstacle_collision or self._do_nothing
+
         img = image.Image.load(image_paths.PLAYER_MAIN)
         super().__init__(image=img, speed_unit=speed_unit, v_x0=-speed_unit, v_y0=-speed_unit/3, m=4)
 
         self.store_last_movement_direction()
+
+    @staticmethod
+    def _do_nothing():
+        pass
 
     def is_crashed(self):
         return False
@@ -48,6 +56,7 @@ class Player(MovingObject):
     def on_collision_y(self, object_hit, gameboard):
         distance = self.rect.distance_y(object_hit.rect)
         location = self.rect.y + distance
+        self.call_external_collision_handlers(object_hit)
         
         if distance < 0:  # player must've been going up
             self.stop_movement_y(location + 1)
@@ -57,11 +66,20 @@ class Player(MovingObject):
     def on_collision_x(self, object_hit, gameboard):
         distance = self.rect.distance_x(object_hit.rect)
         location = self.rect.x + distance
+        self.call_external_collision_handlers(object_hit)
 
         if distance < 0:  # player must've been going left
             self.stop_movement_x(location + 1)
         else:
             self.stop_movement_x(location - 1)
+
+    def call_external_collision_handlers(self, object_hit):
+        from .collectable import Collectable
+        from .obstacle import Obstacle
+        if isinstance(object_hit, Collectable):
+            self.on_collectable_collision()
+        if isinstance(object_hit, Obstacle):
+            self.on_obstacle_collision()
 
     def stop_movement_x(self, x):
         self.rect.x = x

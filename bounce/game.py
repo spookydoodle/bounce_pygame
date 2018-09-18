@@ -26,21 +26,25 @@ class Game(State):
         State.__init__(self)
         self.active_state = "Play"
         self.level = 0
+        self.score = Score(3)
 
         self.gameboard = GameBoard(walls = [], 
                                    collectables = [], 
                                    obstacles = [], 
                                    bullets = [])
 
-        self.player = Player(speed_unit = 8)
+        # Build a player instance, inject `on_*_collision` handlers to keep track of the score
+        self.player = Player(
+            speed_unit = 8,
+            on_obstacle_collision=lambda: self.score.decrease_lives(),
+            on_collectable_collision=lambda: self.score.add_points()
+        )
         self.player.rect.x = 200
         self.player.rect.bottom = -100
         
         self.last_wall_y = -390
         self.last_collectable_y = -1000
         self.last_obstacle_y = -400
-
-        self.score = Score(3)
 
         self.won_level = False
         self.new_level = True
@@ -90,12 +94,7 @@ class Game(State):
                 self.player.append_bullet(event, self.gameboard)
 
                 self.move_bullets()
-
-                # FIXME: replace these methods with the `on_collision` event handlers
-                # self.check_bullets_game_objects_collision(self.gameboard.collectables)
-                # self.check_bullets_game_objects_collision(self.gameboard.obstacles)
-
-                self.update_scores()
+                self.score.update_meters(-self.player.rect.y)
 
             # You won level screen - press any key to move to next level
             else: 
@@ -208,37 +207,6 @@ class Game(State):
             first_object = game_object_list[0]
             if abs(first_object.rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
                 self.gameboard.remove(first_object)
-    
-
-    def update_scores(self):
-        self.score.update_meters(- self.player.rect.y)
-        self.check_collectables_collision()
-        self.check_obstacles_collision()
-
-
-    def check_collectables_collision(self):
-    
-        collision_list = [
-            collectable
-            for collectable in self.gameboard.collectables
-            if collectable.collides_with(self.player.rect)]
-
-        for collectable in collision_list:
-            self.gameboard.remove(collectable)
-            self.score.add_points()
-
-
-    def check_obstacles_collision(self):
-    
-        collision_list = [
-            obstacle
-            for obstacle in self.gameboard.obstacles
-            if obstacle.collides_with(self.player.rect)]
-
-        for obstacle in collision_list:
-            self.gameboard.remove(obstacle)
-            self.score.decrease_lives()
-
 
     def move_bullets(self):
         for bullet in self.gameboard.bullets:
@@ -249,7 +217,6 @@ class Game(State):
     # TODO: is_game_over needs to be rewritten to make a bit more sense
     def is_game_over(self):
         return self.player.is_crashed() or self.score.number_of_lives == 0
-
 
     def game_over_continue(self, event):
         if event.type == pygame.KEYDOWN:

@@ -12,3 +12,13 @@ class Collectable(GameObject):
         shape = rect_in_corner(*size)
         image = Image.create(shape, cls.COLOR)
         return cls(image, x, y)
+
+    def on_collision_x(self, object_hit, gameboard):
+        from .player import Player
+        if isinstance(object_hit, Player):
+            self.destroy(gameboard)
+
+    def on_collision_y(self, object_hit, gameboard):
+        from .player import Player
+        if isinstance(object_hit, Player):
+            self.destroy(gameboard)
