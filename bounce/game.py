@@ -2,6 +2,9 @@ from silnik import image
 from silnik.rendering.shape import Polygon, rectangle
 from silnik.rendering.point import Point
 
+from .collectable import Collectable
+from .obstacle import Obstacle
+from .wall import Wall
 from .state import *
 from .player import *
 from .gameboard import *
@@ -23,21 +26,25 @@ class Game(State):
         State.__init__(self)
         self.active_state = "Play"
         self.level = 0
+        self.score = Score(3)
 
         self.gameboard = GameBoard(walls = [], 
                                    collectables = [], 
                                    obstacles = [], 
                                    bullets = [])
 
-        self.player = Player(speed_unit = 8)
+        # Build a player instance, inject `on_*_collision` handlers to keep track of the score
+        self.player = Player(
+            speed_unit = 8,
+            on_obstacle_collision=lambda: self.score.decrease_lives(),
+            on_collectable_collision=lambda: self.score.add_points()
+        )
         self.player.rect.x = 200
         self.player.rect.bottom = -100
         
         self.last_wall_y = -390
         self.last_collectable_y = -1000
         self.last_obstacle_y = -400
-
-        self.score = Score(3)
 
         self.won_level = False
         self.new_level = True
@@ -85,13 +92,9 @@ class Game(State):
                 self.player.process_event(event)
                 self.player.move(self.gameboard)
                 self.player.append_bullet(event, self.gameboard)
-                self.player.move_bullets(self.gameboard, 12)
 
-                # FIXME: replace these methods with the `on_collision` event handlers
-                # self.check_bullets_game_objects_collision(self.gameboard.collectables)
-                # self.check_bullets_game_objects_collision(self.gameboard.obstacles)
-
-                self.update_scores()
+                self.move_bullets()
+                self.score.update_meters(-self.player.rect.y)
 
             # You won level screen - press any key to move to next level
             else: 
@@ -102,14 +105,6 @@ class Game(State):
             self.game_over_continue(event)
 
     @staticmethod
-    def create_rectangle_image_from_data(size, color):
-        width, height = size
-        top_left = Point(0, 0)  # the top left corner has to be located at (0,0)
-        bottom_right = Point(width, height)
-        shape = rectangle(top_left, bottom_right)
-        return image.Image.create(shape, color)
-
-    @staticmethod
     def dict_data_to_arguments(data):
         x = data['position']['x']
         y = data['position']['y']
@@ -118,38 +113,20 @@ class Game(State):
         size = (width, height)
         return (size, x, y)
 
-    def create_wall(self, size, x, y):
-        return GameObject(
-            image = self.create_rectangle_image_from_data(size, color = Colors.BLUE ),
-            x = x,
-            y = y)
-
-    def create_collectable(self, size, x, y):
-        return GameObject(
-            image = self.create_rectangle_image_from_data(size, color = Colors.GREEN ),
-            x = x,
-            y = y)
-
-    def create_obstacle(self, size, x, y):
-        return GameObject(
-            image = self.create_rectangle_image_from_data(size, color = Colors.RED ),
-            x = x,
-            y = y)
-
     # return all wall objects listed in WALLS in walls_list.py
     def create_init_walls(self):
         return [
-            self.create_wall(*self.dict_data_to_arguments(data))
+            Wall.build(*self.dict_data_to_arguments(data))
             for data in list(GAME_OBJECTS.values()) if data['type'] == 1]
 
     def create_init_collectables(self):
         return [
-            self.create_collectable(*self.dict_data_to_arguments(data))
+            Collectable.build(*self.dict_data_to_arguments(data))
             for data in list(GAME_OBJECTS.values()) if data['type'] == 2]
 
     def create_init_obstacles(self):
         return [
-            self.create_obstacle(*self.dict_data_to_arguments(data))
+            Obstacle.build(*self.dict_data_to_arguments(data))
             for data in list(GAME_OBJECTS.values()) if data['type'] == 3]
 
     def game_object_lists(self):
@@ -185,7 +162,7 @@ class Game(State):
             distance = random.randint(75, 150)
 
             self.gameboard.walls.append(
-                self.create_wall(
+                Wall.build(
                     (width, height),
                     x_pos,
                     y = self.last_wall_y - distance - height))
@@ -196,7 +173,7 @@ class Game(State):
         self.last_collectable_y -= random.randint(0,500)
 
         self.gameboard.collectables.append(
-            self.create_collectable(
+            Collectable.build(
                 (50, 50),
                 x_positions[random.randint(0, (len(x_positions)-1))],
                 y = self.last_collectable_y))
@@ -208,7 +185,7 @@ class Game(State):
         self.last_obstacle_y -= random.randint(200,500)
 
         self.gameboard.obstacles.append(
-            self.create_obstacle(
+            Obstacle.build(
                 (50, 50),
                 x_positions[random.randint(0, (len(x_positions)-1))],
                 self.last_obstacle_y))
@@ -217,11 +194,6 @@ class Game(State):
         self.append_wall()
         self.append_collectable()
         self.append_obstacle()
-
-    # remove game objectst which are not visible on the screen anymore
-    def remove_game_object(self, game_object_list, n = 0):
-        del game_object_list[n]
-
 
     def check_append_game_objects(self, screen, game_object_list, last_y):
         if game_object_list != self.gameboard.bullets:
@@ -232,60 +204,19 @@ class Game(State):
     def check_remove_game_object(self, screen, game_object_list):
         #if game_object_list != self.gameboard.bullets or (game_object_list == self.gameboard.bullets and len(game_object_list) > 0):
         if len(game_object_list) > 0:
-            if abs(game_object_list[0].rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
-                self.remove_game_object(game_object_list)
-    
+            first_object = game_object_list[0]
+            if abs(first_object.rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
+                self.gameboard.remove(first_object)
 
-    def update_scores(self):
-        self.score.update_meters(- self.player.rect.y)
-        self.check_collectables_collision()
-        self.check_obstacles_collision()
-
-
-    def check_collectables_collision(self):
-    
-        collision_list = [
-            collectable
-            for collectable in self.gameboard.collectables
-            if collectable.collides_with(self.player.rect)]
-
-        for collectable in collision_list:
-            self.gameboard.collectables.remove(collectable)
-            self.score.add_points()
-
-
-    def check_obstacles_collision(self):
-    
-        collision_list = [
-            obstacle
-            for obstacle in self.gameboard.obstacles
-            if obstacle.collides_with(self.player.rect)]
-
-        for obstacle in collision_list:
-            self.gameboard.obstacles.remove(obstacle)
-            self.score.decrease_lives()
-
-
-    def check_bullets_game_objects_collision(self, game_object_list):
-        
-        for object in game_object_list:
-
-            collision_list = [
-                bullet
-                for bullet in self.gameboard.bullets
-                if bullet.collides_with(object.rect) or object.collides_with(bullet.rect)]
-
-            for bullet in collision_list:
-                self.gameboard.bullets.remove(bullet)
-                game_object_list.remove(object)
-
+    def move_bullets(self):
+        for bullet in self.gameboard.bullets:
+            bullet.move(self.gameboard)
 
 
     # TODO : player.is_crashed should be true also if player collides with an obstacle
     # TODO: is_game_over needs to be rewritten to make a bit more sense
     def is_game_over(self):
         return self.player.is_crashed() or self.score.number_of_lives == 0
-
 
     def game_over_continue(self, event):
         if event.type == pygame.KEYDOWN:

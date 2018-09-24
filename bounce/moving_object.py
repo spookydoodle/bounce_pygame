@@ -50,7 +50,8 @@ class MovingObject(GameObject):
 
         if len(colliding_objects) > 0:
             obj = colliding_objects[0]
-            self.on_collision_x(obj)
+            self.on_collision_x(obj, gameboard)
+            obj.on_collision_x(self, gameboard)
         
         self.rect.x += self.v_x
 
@@ -69,8 +70,8 @@ class MovingObject(GameObject):
             # Trigger the collision handler for the first object
             # TODO: add some magic to trigger multiple handlers
             obj = colliding_objects[0]
-            self.on_collision_y(obj)
-            # TODO: obj.on_collision_y(self)
+            self.on_collision_y(obj, gameboard)
+            obj.on_collision_y(self, gameboard)
     
         # Update y-position
         # This will get executed after calling all `on_collision` handlers
@@ -141,15 +142,3 @@ class MovingObject(GameObject):
         return zip(
             objects,
             [func(obj) for obj in objects])
-
-    def on_collision_x(self, object_hit):
-        message = "{} needs to implement the `on_collision` methods!".format(
-            self.__class__.__name__)
-
-        raise NotImplementedError(message)
-
-    def on_collision_y(self, object_hit):
-        message = "{} needs to implement the `on_collision` methods!".format(
-            self.__class__.__name__)
-
-        raise NotImplementedError(message)

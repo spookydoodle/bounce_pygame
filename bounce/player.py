@@ -4,6 +4,7 @@ from silnik import image
 from silnik.rendering.shape import Polygon, rectangle
 from silnik.rendering.point import Point
 
+from .bullet import Bullet
 from .game_object import GameObject
 from .moving_object import MovingObject
 from .constants import Colors, CONTROLS
@@ -12,11 +13,19 @@ from . import image_paths
 
 class Player(MovingObject):
 
-    def __init__(self, speed_unit=1):
+    def __init__(self, speed_unit=1, on_obstacle_collision=None, on_collectable_collision=None):
+        # External functions to call when specific collisions happen
+        self.on_collectable_collision = on_collectable_collision or self._do_nothing
+        self.on_obstacle_collision = on_obstacle_collision or self._do_nothing
+
         img = image.Image.load(image_paths.PLAYER_MAIN)
         super().__init__(image=img, speed_unit=speed_unit, v_x0=-speed_unit, v_y0=-speed_unit/3, m=4)
 
         self.store_last_movement_direction()
+
+    @staticmethod
+    def _do_nothing():
+        pass
 
     def is_crashed(self):
         return False
@@ -44,33 +53,40 @@ class Player(MovingObject):
         self.call_movement_functions(gameboard)
         self.handle_images()
 
-    def on_collision_y(self, object_hit):
+    def on_collision_y(self, object_hit, gameboard):
         distance = self.rect.distance_y(object_hit.rect)
         location = self.rect.y + distance
+        self.call_external_collision_handlers(object_hit)
         
-        if distance < 0:  # player must've been going down
-            # TODO: self.stop_movement_y(location + 1), remove the object
-            pass
+        if distance < 0:  # player must've been going up
+            self.stop_movement_y(location + 1)
         else:
-            # TODO: self.stop_movement_y(location - 1), remove the object
-            pass
+            self.stop_movement_y(location - 1)
 
-    def on_collision_x(self, object_hit):
+    def on_collision_x(self, object_hit, gameboard):
         distance = self.rect.distance_x(object_hit.rect)
         location = self.rect.x + distance
+        self.call_external_collision_handlers(object_hit)
 
         if distance < 0:  # player must've been going left
             self.stop_movement_x(location + 1)
         else:
-            self.stop_movement_x(location- 1)
+            self.stop_movement_x(location - 1)
+
+    def call_external_collision_handlers(self, object_hit):
+        from .collectable import Collectable
+        from .obstacle import Obstacle
+        if isinstance(object_hit, Collectable):
+            self.on_collectable_collision()
+        if isinstance(object_hit, Obstacle):
+            self.on_obstacle_collision()
 
     def stop_movement_x(self, x):
         self.rect.x = x
         self.v_x = 0
 
     def stop_movement_y(self, y):
-        self.rect.bottom = y
-        self.v_y = 0
+        self.rect.y = y
 
     def handle_images(self):
         if self.is_crashed():
@@ -93,22 +109,12 @@ class Player(MovingObject):
         if event.type == pygame.KEYDOWN:
 
             if event.key in CONTROLS["G_SHOOT"]:
-                gameboard.bullets.append(self.create_bullet(
-                    (width, width * 1.5),
+                
+                bullet = Bullet(
                     x = (self.rect.left + self.rect.right) / 2 - width / 2,
-                    y = self.rect.top))
-
-    def create_bullet(self, size, x, y):
-        shape = rectangle(Point(0, 0), Point(*size))
-        return GameObject(
-            image = image.Image.create(shape, color = Colors.MAGENTA ),
-            x = x,
-            y = y)
-
-    def move_bullets(self, gameboard, bullet_speed):
-        # TODO: create a `Bullet` class, derive from `MovingObject`, let it handle its own movement
-        for bullet in gameboard.bullets:
-            bullet.rect.y -= bullet_speed
+                    y = self.rect.top)
+                
+                gameboard.bullets.append(bullet)
 
     def store_last_movement_direction(self):
         # don't update if `self` is not currently moving
