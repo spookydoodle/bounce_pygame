@@ -23,11 +23,11 @@ class TestGameObject(TestCase):
             Point(100, 100))
         img = Image("mock_raw_image", shape)
         self.object = GameObject(img)
-        self.base_rect = self.object.rect
+        self.base_rect = self.object.image.shape
 
         # Non-overlapping rectangles
-        x_offset = self.object.rect.width
-        y_offset = self.object.rect.height
+        x_offset = self.object.image.shape.width
+        y_offset = self.object.image.shape.height
         self.rect_above = self.base_rect.shifted(y_shift=-(10 + y_offset))
         self.rect_below = self.base_rect.shifted(y_shift=10 + y_offset)
         self.rect_left = self.base_rect.shifted(x_shift=-(10 + x_offset))
@@ -74,8 +74,8 @@ class TestIsToTheRight(TestGameObject):
 
     def test_is_false_for_line_in_the_bottom_left_corner(self):
         corner = Point(
-            self.object.rect.left,
-            self.object.rect.bottom)
+            self.object.image.shape.left,
+            self.object.image.shape.bottom)
         
         # Build a line so that the player is on its edge
         line = Polygon([

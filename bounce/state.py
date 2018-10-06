@@ -1,6 +1,5 @@
 import pygame
 from pygame.locals import *
-from .render_functions import *
 from .constants import *
 
 

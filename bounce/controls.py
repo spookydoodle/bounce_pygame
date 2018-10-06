@@ -1,3 +1,7 @@
+from silnik.image import Image
+from silnik.rendering.text import Text
+from silnik.rendering.colors import Colors
+
 from .destination import Destination
 from .state import *
 
@@ -5,12 +9,13 @@ from .state import *
 class Controls(State):
     
     # dictionary with assignment and descriptions of control keys
-    CONTROLS_DESC = [["Right", "D / Right Arrow"],
-                ["Left", "A / Left Arrow"],
-                ["Jump / Ollie", "Space"],
-                ["Manual / Grind", "W / Up Arrow"],
-                ["Back", "B / Return"]
-                ]
+    CONTROLS_DESC = [
+        ["Right", "D / Right Arrow"],
+        ["Left", "A / Left Arrow"],
+        ["Jump / Ollie", "Space"],
+        ["Manual / Grind", "W / Up Arrow"],
+        ["Back", "B / Return"]
+    ]
 
 
     def __init__(self):
@@ -49,20 +54,19 @@ class Controls(State):
 
 
     def display_frame(self, screen, background_image):
-        font = pygame.font.SysFont('Arial', 30)
-        BLACK = (0, 0, 0); WHITE = (255, 255, 255); RED = (255, 0, 0)
-        selected_marker = ">"; unselected_marker = " "
+        selected_marker = ">"
+        unselected_marker = " "
 
-        # clean game area
-        #screen.blit(background_image.raw_image, (0, 0))
-        screen.fill(WHITE, (0, 0, screen.get_size()[0], screen.get_size()[1]))
+        screen.fill(Colors.WHITE, (0, 0, screen.get_size()[0], screen.get_size()[1]))
 
-        
-        for j in range(len(self.CONTROLS_DESC[0])):
-            for i in range(len(self.CONTROLS_DESC)):
-                if (j == 0 and i == self.selected_index): text = "{} {}".format(selected_marker, self.CONTROLS_DESC[i][j])
-                else: text = "{} {}".format(unselected_marker, self.CONTROLS_DESC[i][j])
-
-                draw_text(screen, text, font, BLACK, "L", 550 + j*200, 250 + i*50)
+        for i, pair in enumerate(self.CONTROLS_DESC):
+            description, key = pair
+            marker = selected_marker if i == self.selected_index else unselected_marker
+            content = "{} {}    {}".format(marker, description, key)
+            text = Text(content, font_color=Colors.BLACK, font_size=25)
+            renderable_text = Image.from_pyimage(text.pre_render())
+            renderable_text.shape.x = 50
+            renderable_text.shape.y = 250 + i * 100
+            renderable_text.render(screen)
 
         pygame.display.update()

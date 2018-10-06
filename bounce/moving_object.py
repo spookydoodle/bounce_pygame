@@ -46,14 +46,14 @@ class MovingObject(GameObject):
 
     def move_x(self, gameboard):
         colliding_objects = self.get_colliding_objects_x(gameboard)
-        colliding_objects.sort(key=lambda obj: abs(self.rect.distance_x(obj.rect)))
+        colliding_objects.sort(key=lambda obj: abs(self.image.shape.distance_x(obj.image.shape)))
 
         if len(colliding_objects) > 0:
             obj = colliding_objects[0]
             self.on_collision_x(obj, gameboard)
             obj.on_collision_x(self, gameboard)
         
-        self.rect.x += self.v_x
+        self.image.shape.x += self.v_x
 
     def move_y(self, gameboard):
         # Calculate y-acceleration (gravity pull)
@@ -64,7 +64,7 @@ class MovingObject(GameObject):
 
         # Get all objects on path
         colliding_objects = self.get_colliding_objects_y(gameboard)
-        colliding_objects.sort(key=lambda obj: abs(self.rect.distance_y(obj.rect)))
+        colliding_objects.sort(key=lambda obj: abs(self.image.shape.distance_y(obj.image.shape)))
         
         if len(colliding_objects) > 0:
             # Trigger the collision handler for the first object
@@ -76,7 +76,7 @@ class MovingObject(GameObject):
         # Update y-position
         # This will get executed after calling all `on_collision` handlers
         # If you want to stop `self` after collisions, make sure to set `v_y` to 0 in `on_collision`
-        self.rect.y += self.v_y
+        self.image.shape.y += self.v_y
 
     def get_colliding_objects_x(self, gameboard):
         """
@@ -85,7 +85,7 @@ class MovingObject(GameObject):
         # NOTE: `self.v_x` value should be updated *before* calling this method
         """            
         # A function that takes an object and returns a distance in the `x` axis
-        distance_function = lambda obj: self.rect.distance_x(obj.rect)
+        distance_function = lambda obj: self.image.shape.distance_x(obj.image.shape)
 
         if self.is_moving_right():
             candidates = gameboard.objects_right(self)
@@ -114,7 +114,7 @@ class MovingObject(GameObject):
         # NOTE: `self.v_y` value should be updated *before* calling this method
         """            
         # A function that takes an object and returns a distance in the `y` axis
-        distance_function = lambda obj: self.rect.distance_y(obj.rect)
+        distance_function = lambda obj: self.image.shape.distance_y(obj.image.shape)
 
         if self.is_falling():
             candidates = gameboard.objects_under(self)
