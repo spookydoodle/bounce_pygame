@@ -28,7 +28,6 @@ class Player(MovingObject):
         pass
 
     def is_crashed(self):
-        return False
         return (self.image.shape.left < 50 or self.image.shape.right > 600)
 
     def process_event(self, event):

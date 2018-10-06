@@ -21,7 +21,6 @@ class Score:
     def update_meters(self, meters):
         self.meters = int(meters / 10)
 
-
     def reset(self):
         self.number_of_lives = self.init_number_of_lives
         self.points = 0

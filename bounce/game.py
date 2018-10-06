@@ -40,12 +40,6 @@ class Game(State):
             on_obstacle_collision=lambda: self.score.decrease_lives(),
             on_collectable_collision=lambda: self.score.add_points()
         )
-        self.player.image.shape.x = 200
-        self.player.image.shape.bottom = -100
-        
-        self.last_wall_y = -390
-        self.last_collectable_y = -1000
-        self.last_obstacle_y = -400
 
         self.won_level = False
         self.new_level = True
@@ -59,21 +53,13 @@ class Game(State):
     def next_destination(self):
         if self.active_state == "Menu": return Destination.MENU
         elif self.active_state == "Exit": return Destination.EXIT
-
     
     def run(self, screen, event):
         if event.type == pygame.KEYDOWN and event.key in CONTROLS["QUIT"]:
             self.active_state = "Exit"
         
         if self.new_level:
-            self.level += 1
-            self.gameboard.walls = self.create_init_walls()
-            self.gameboard.collectables = self.create_init_collectables()
-            self.gameboard.obstacles = self.create_init_obstacles()
-            self.gameboard.bullets = []
-            self.player.image.shape.x = 200
-            self.player.image.shape.bottom = -100
-            self.new_level = False
+            self.init_new_level()
 
         if not self.is_game_over():
             if not self.won_level:
@@ -97,6 +83,8 @@ class Game(State):
                 self.move_bullets()
                 self.score.update_meters(-self.player.image.shape.y)
 
+                self.check_won()
+
             # You won level screen - press any key to move to next level
             else: 
                 self.won_level_continue(event)
@@ -104,6 +92,21 @@ class Game(State):
         # Game over screen action - press any key and move to menu
         else:
             self.game_over_continue(event)
+
+    def init_new_level(self):
+        self.level += 1
+        self.score.reset()
+        self.camera.reset()
+        self.gameboard.walls = self.create_init_walls()
+        self.gameboard.collectables = self.create_init_collectables()
+        self.gameboard.obstacles = self.create_init_obstacles()
+        self.gameboard.bullets = []
+        self.player.image.shape.x = 200
+        self.player.image.shape.bottom = -100
+        self.last_wall_y = -390
+        self.last_collectable_y = -1000
+        self.last_obstacle_y = -400
+        self.new_level = False
 
     @staticmethod
     def dict_data_to_arguments(data):
@@ -209,6 +212,10 @@ class Game(State):
             if abs(first_object.image.shape.y - self.player.image.shape.y) > pygame.display.get_surface().get_rect().height:
                 self.gameboard.remove(first_object)
 
+    def check_won(self):
+        if self.score.points >= 50:
+            self.won_level = True
+
     def move_bullets(self):
         for bullet in self.gameboard.bullets:
             bullet.move(self.gameboard)
@@ -300,12 +307,12 @@ class Game(State):
             text = Text(str(result), font_size=20, font_color=Colors.MAGENTA)
             self.renderable_text(text, x_position, 10 + n * 30, x_anchor="right").render(screen)
 
-    def draw_won_level_screen(self):
-        won_level_text = ["Level " + str(self.level) + " beated!", "Press Y key to continue"]
+    def draw_won_level_screen(self, screen):
+        won_level_text = ["Level " + str(self.level) + " beaten!", "Press Y key to continue"]
 
         for i, line in enumerate(won_level_text):
             text = Text(line, font_size=20, font_color=Colors.WHITE)
-            self.renderable_text(text, 500, 300 + i * 50).render(screen)
+            self.renderable_text(text, 100, 300 + i * 50).render(screen)
 
 
     def draw_game_over_screen(self, screen):
