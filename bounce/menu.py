@@ -1,3 +1,7 @@
+from silnik.image import Image
+from silnik.rendering.text import Text
+
+from .constants import Colors
 from .state import *
 from .destination import Destination
 
@@ -58,9 +62,15 @@ class Menu(State):
         screen.fill(WHITE)
 
         for i in range(len(self.OPTIONS)):
-            if i == self.selected_index: text = "{} {}".format(selected_marker, self.OPTIONS[i])
-            else: text = "{} {}".format(unselected_marker, self.OPTIONS[i])
+            if i == self.selected_index:
+                content = "{} {}".format(selected_marker, self.OPTIONS[i])
+            else:
+                content = "{} {}".format(unselected_marker, self.OPTIONS[i])
 
-            draw_text(screen, text, font, BLACK, "L", 50, 250 + i*100)
+            text = Text(content, font_color=BLACK, font_size=40)
+            renderable_text = Image.from_pyimage(text.pre_render())
+            renderable_text.shape.x = 50
+            renderable_text.shape.y = 250 + i * 100
+            renderable_text.render(screen)
 
         pygame.display.update()

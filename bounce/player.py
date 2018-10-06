@@ -29,7 +29,7 @@ class Player(MovingObject):
 
     def is_crashed(self):
         return False
-        return (self.rect.left < 50 or self.rect.right > 600)
+        return (self.image.shape.left < 50 or self.image.shape.right > 600)
 
     def process_event(self, event):
 
@@ -54,8 +54,8 @@ class Player(MovingObject):
         self.handle_images()
 
     def on_collision_y(self, object_hit, gameboard):
-        distance = self.rect.distance_y(object_hit.rect)
-        location = self.rect.y + distance
+        distance = self.image.shape.distance_y(object_hit.image.shape)
+        location = self.image.shape.y + distance
         self.call_external_collision_handlers(object_hit)
         
         if distance < 0:  # player must've been going up
@@ -64,8 +64,8 @@ class Player(MovingObject):
             self.stop_movement_y(location - 1)
 
     def on_collision_x(self, object_hit, gameboard):
-        distance = self.rect.distance_x(object_hit.rect)
-        location = self.rect.x + distance
+        distance = self.image.shape.distance_x(object_hit.image.shape)
+        location = self.image.shape.x + distance
         self.call_external_collision_handlers(object_hit)
 
         if distance < 0:  # player must've been going left
@@ -82,11 +82,11 @@ class Player(MovingObject):
             self.on_obstacle_collision()
 
     def stop_movement_x(self, x):
-        self.rect.x = x
+        self.image.shape.x = x
         self.v_x = 0
 
     def stop_movement_y(self, y):
-        self.rect.y = y
+        self.image.shape.y = y
 
     def handle_images(self):
         if self.is_crashed():
@@ -101,7 +101,10 @@ class Player(MovingObject):
         else:
             img = image_paths.PLAYER_MAIN
         
+        # Reload the image and restore shape (#TODO: decouple)
+        shape = self.image.shape        
         self.image = image.Image.load(img)
+        self.image.shape = shape
 
      
     def append_bullet(self, event, gameboard, width = 5):
@@ -111,8 +114,8 @@ class Player(MovingObject):
             if event.key in CONTROLS["G_SHOOT"]:
                 
                 bullet = Bullet(
-                    x = (self.rect.left + self.rect.right) / 2 - width / 2,
-                    y = self.rect.top)
+                    x = (self.image.shape.left + self.image.shape.right) / 2 - width / 2,
+                    y = self.image.shape.top)
                 
                 gameboard.bullets.append(bullet)
 

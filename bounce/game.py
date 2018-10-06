@@ -1,6 +1,7 @@
-from silnik import image
+from silnik.image import Image
 from silnik.rendering.shape import Polygon, rectangle
 from silnik.rendering.point import Point
+from silnik.rendering.text import Text
 
 from .collectable import Collectable
 from .obstacle import Obstacle
@@ -39,8 +40,8 @@ class Game(State):
             on_obstacle_collision=lambda: self.score.decrease_lives(),
             on_collectable_collision=lambda: self.score.add_points()
         )
-        self.player.rect.x = 200
-        self.player.rect.bottom = -100
+        self.player.image.shape.x = 200
+        self.player.image.shape.bottom = -100
         
         self.last_wall_y = -390
         self.last_collectable_y = -1000
@@ -70,8 +71,8 @@ class Game(State):
             self.gameboard.collectables = self.create_init_collectables()
             self.gameboard.obstacles = self.create_init_obstacles()
             self.gameboard.bullets = []
-            self.player.rect.x = 200
-            self.player.rect.bottom = -100
+            self.player.image.shape.x = 200
+            self.player.image.shape.bottom = -100
             self.new_level = False
 
         if not self.is_game_over():
@@ -83,7 +84,7 @@ class Game(State):
                       "C",  len(self.gameboard.collectables),
                       "O", len(self.gameboard.obstacles),
                       "B",  len(self.gameboard.bullets),)
-                print(self.last_wall_y, self.last_collectable_y, self.last_obstacle_y, self.player.rect.y)
+                print(self.last_wall_y, self.last_collectable_y, self.last_obstacle_y, self.player.image.shape.y)
                 
                 # changes x and y parameters of camera depending on the location of the player on the screen
                 self.camera.adjust(screen, self.player)
@@ -94,7 +95,7 @@ class Game(State):
                 self.player.append_bullet(event, self.gameboard)
 
                 self.move_bullets()
-                self.score.update_meters(-self.player.rect.y)
+                self.score.update_meters(-self.player.image.shape.y)
 
             # You won level screen - press any key to move to next level
             else: 
@@ -157,7 +158,7 @@ class Game(State):
         x_positions = [100, 300, 500]
         
         for x_pos in x_positions:
-            self.last_wall_y = self.gameboard.walls[-len(x_positions)].rect.y
+            self.last_wall_y = self.gameboard.walls[-len(x_positions)].image.shape.y
             height = random.randint(100, 400)
             distance = random.randint(75, 150)
 
@@ -197,7 +198,7 @@ class Game(State):
 
     def check_append_game_objects(self, screen, game_object_list, last_y):
         if game_object_list != self.gameboard.bullets:
-            if abs(last_y - self.player.rect.y) < pygame.display.get_surface().get_rect().height:
+            if abs(last_y - self.player.image.shape.y) < pygame.display.get_surface().get_rect().height:
                 self.append_game_objects()
 
     
@@ -205,7 +206,7 @@ class Game(State):
         #if game_object_list != self.gameboard.bullets or (game_object_list == self.gameboard.bullets and len(game_object_list) > 0):
         if len(game_object_list) > 0:
             first_object = game_object_list[0]
-            if abs(first_object.rect.y - self.player.rect.y) > pygame.display.get_surface().get_rect().height:
+            if abs(first_object.image.shape.y - self.player.image.shape.y) > pygame.display.get_surface().get_rect().height:
                 self.gameboard.remove(first_object)
 
     def move_bullets(self):
@@ -233,8 +234,6 @@ class Game(State):
 
 
     def display_frame(self, screen, background_image):
-               
-        font = pygame.font.SysFont('Arial', 40)
 
         # clean game area
         screen.fill(Colors.BLACK, (0, 0, screen.get_size()[0], screen.get_size()[1]))
@@ -248,12 +247,12 @@ class Game(State):
 
             # you won level screen
             else:
-                self.draw_won_level_screen(screen, font, Colors.WHITE)
+                self.draw_won_level_screen(screen)
 
         # Game over screen
         else:
             self.draw_main_game(screen)
-            self.draw_game_over_screen(screen, font, Colors.WHITE)
+            self.draw_game_over_screen(screen)
 
 
         pygame.display.update()
@@ -263,36 +262,59 @@ class Game(State):
 
         for game_object_list in self.game_object_lists():
             for sprite in game_object_list:
-                draw_rect(screen, self.camera, sprite.rect, sprite.image)
+                sprite.image.render(screen, self.camera)
                 
         # draw player
-        draw_rect(screen, self.camera, self.player.rect, self.player.image)
+        self.player.image.render(screen, self.camera)
 
+    def renderable_text(self, text, x, y, x_anchor="left", y_anchor="top"):
+        """
+        A helper to draw a text relative to the screen.
+
+        If x_anchor == "right", the text will be drawn relative to the right edge.
+        If x_anchor == "bottom", the text will be drawn relative to the bottom edge.
+        """
+        renderable_text = Image.from_pyimage(text.pre_render())
+        
+        if x_anchor == "left":
+            renderable_text.shape.left = x
+        elif x_anchor == "right":
+            renderable_text.shape.right = x
+        
+        if y_anchor=="top":
+            renderable_text.shape.top = y
+        elif y_anchor=="bottom":
+            renderable_text.shape.bottom = y
+
+        return renderable_text
 
     def draw_game_results(self, screen, score, color):
-        font = pygame.font.SysFont('Arial', 20)
         game_results_list = ["Level: {}".format(self.level),
                              "Lives: {}".format(str(score.number_of_lives)),
                              "Meters: {}".format(str(score.meters)),
                              "Points: {}".format(str(score.points))]
         
+        x_position = screen.get_rect().width - 10
+        
         for n, result in enumerate(game_results_list):
-            draw_text(screen, result, font, color, "R", screen.get_rect().width - 10, (10 + n*30))
-  
-    
-    def draw_won_level_screen(self, screen, font, color):
+            text = Text(str(result), font_size=20, font_color=Colors.MAGENTA)
+            self.renderable_text(text, x_position, 10 + n * 30, x_anchor="right").render(screen)
+
+    def draw_won_level_screen(self):
         won_level_text = ["Level " + str(self.level) + " beated!", "Press Y key to continue"]
 
-        for i, text in enumerate(won_level_text):
-            draw_text(screen, text, font, color, "L", 500, 300 + i * 50)
+        for i, line in enumerate(won_level_text):
+            text = Text(line, font_size=20, font_color=Colors.WHITE)
+            self.renderable_text(text, 500, 300 + i * 50).render(screen)
 
 
-    def draw_game_over_screen(self, screen, font, color):
+    def draw_game_over_screen(self, screen):
         game_over_text = ["You lost!", 
                           "Points collected: {}!".format(self.score.points), 
                           "You went up {} meters!".format(self.score.meters),
                           "",
                           "Do you want to continue? Y/N"]
 
-        for i, text in enumerate(game_over_text):
-            draw_text(screen, text, font, color, "L", 100, 250 + i * 50)
+        for i, line in enumerate(game_over_text):
+            text = Text(line, font_size=20, font_color=Colors.WHITE)
+            self.renderable_text(text, 100, 250 + i * 50).render(screen)

@@ -33,28 +33,28 @@ class GameBoard:
         return [
             obj
             for obj in self.all_objects()
-            if obj.is_under(player.rect)
+            if obj.is_under(player.image.shape)
         ]
 
     def objects_above(self, player):
         return [
             obj
             for obj in self.all_objects()
-            if obj.is_above(player.rect)
+            if obj.is_above(player.image.shape)
         ]
 
     def objects_left(self, player):
         return [
             obj
             for obj in self.all_objects()
-            if obj.is_to_the_left(player.rect)
+            if obj.is_to_the_left(player.image.shape)
         ]
 
     def objects_right(self, player):
         return [
             obj
             for obj in self.all_objects()
-            if obj.is_to_the_right(player.rect)
+            if obj.is_to_the_right(player.image.shape)
         ]
 
     def walls_under(self, player):
@@ -64,7 +64,7 @@ class GameBoard:
         ans = [
             wall
             for wall in self.walls
-            if wall.is_under(player.rect)]
+            if wall.is_under(player.image.shape)]
         return ans
 
     def walls_right(self, player):
@@ -74,7 +74,7 @@ class GameBoard:
         ans = [
             wall
             for wall in self.walls
-            if wall.is_to_the_right(player.rect)]  # the player's right border is the wall's left -> check wall's left collision
+            if wall.is_to_the_right(player.image.shape)]  # the player's right border is the wall's left -> check wall's left collision
         return ans
 
 
@@ -85,26 +85,26 @@ class GameBoard:
         ans = [
             wall
             for wall in self.walls
-            if wall.is_to_the_left(player.rect)]  # see `walls_right`
+            if wall.is_to_the_left(player.image.shape)]  # see `walls_right`
         return ans
 
     def limit_under(self, player):
         distances = [
-            player.rect.distance_y(wall.rect) - 1
+            player.image.shape.distance_y(wall.image.shape) - 1
             for wall in self.walls_under(player)]
         
         return min(distances + [self.MAX_POSITION])
 
     def limit_right(self, player):
         distances = [
-            player.rect.distance_x(wall.rect) - 1
+            player.image.shape.distance_x(wall.image.shape) - 1
             for wall in self.walls_right(player)]
 
         return min(distances + [self.MAX_POSITION])
 
     def limit_left(self, player):
         distances = [
-            player.rect.distance_x(wall.rect) + 1
+            player.image.shape.distance_x(wall.image.shape) + 1
             for wall in self.walls_left(player)]
 
         return max(distances + [self.MIN_POSITION])
@@ -112,10 +112,10 @@ class GameBoard:
 
     # returns true if player is colliding with the nearest wall on their right hand side
     def is_colliding_wall_right(self, player):
-        return player.rect.right == self.limit_right(player)
+        return player.image.shape.right == self.limit_right(player)
 
     def is_colliding_wall_left(self, player):
-        return player.rect.left == self.limit_left(player)
+        return player.image.shape.left == self.limit_left(player)
 
     def remove(self, game_object):
         obj_type = type(game_object)

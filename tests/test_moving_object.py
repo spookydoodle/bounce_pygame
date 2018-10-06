@@ -18,7 +18,7 @@ class TestMovingObject(TestCase):
             Point(100, 100))
         img = Image("mock_raw_image", shape)
         self.object = MovingObject(img)
-        self.base_rect = self.object.rect
+        self.base_rect = self.object.image.shape
 
     def make_wall(self, x=0, y=0):
         img = Image.create(self.base_rect.clone())
@@ -40,7 +40,7 @@ class TestMove(TestMovingObject):
 
         self.object.move_x(gameboard)
         self.assertEqual(
-            self.object.rect.x,
+            self.object.image.shape.x,
             self.object.v_x)
 
     def test_calls_handler_on_collision(self):

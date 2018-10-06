@@ -9,8 +9,8 @@ class Camera:
         self.focus_shift = focus_shift or Point(0, 0)
 
     def adjust(self, screen, player):
-        self.adjust_x(screen.get_rect(), player.rect)
-        self.adjust_y(screen.get_rect(), player.rect)
+        self.adjust_x(screen.get_rect(), player.image.shape)
+        self.adjust_y(screen.get_rect(), player.image.shape)
 
     def focus_point(self, focus_object):
         """
